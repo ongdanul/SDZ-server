@@ -1,4 +1,4 @@
-package com.elice.sdz.orderItem.Entity;
+package com.elice.sdz.orderItem.entity;
 
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.CascadeType;

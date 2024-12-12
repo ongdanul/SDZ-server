@@ -1,4 +1,4 @@
-package com.elice.sdz.orderItem.Entity;
+package com.elice.sdz.orderItem.entity;
 
 import com.elice.sdz.product.entity.Product;
 import jakarta.persistence.Column;
