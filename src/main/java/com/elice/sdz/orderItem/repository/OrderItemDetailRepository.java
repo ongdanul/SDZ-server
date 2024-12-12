@@ -6,5 +6,5 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderItemDetailRepository extends JpaRepository<OrderItemDetail, Long> {
-    Optional<OrderItemDetail> findByOrderItemIdAndProductId(Long orderItemId, Product product);
+    Optional<OrderItemDetail> findByOrderItemIdAndProduct(Long orderItemId, Product product);
 }

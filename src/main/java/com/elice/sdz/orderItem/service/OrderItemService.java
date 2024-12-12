@@ -56,7 +56,7 @@ public class OrderItemService {
         OrderItem orderItem = findOrCreateOrderItem(userId);
 
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
-                .findByOrderItemIdAndProductId(orderItem.getId(), product);
+                .findByOrderItemIdAndProduct(orderItem.getId(), product);
 
         if (optionalOrderItemDetail.isPresent()) {
             // 동일한 물건이 있을 경우 수량 수정
@@ -80,7 +80,7 @@ public class OrderItemService {
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
 
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
-                .findByOrderItemIdAndProductId(orderItem.getId(), product);
+                .findByOrderItemIdAndProduct(orderItem.getId(), product);
 
         if (optionalOrderItemDetail.isPresent()) {
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();

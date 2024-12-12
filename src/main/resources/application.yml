@@ -6,7 +6,7 @@ spring:
     name: sdz
 
   datasource:
-    url: jdbc:mysql://34.22.75.219:5000/sdz_db
+    url: jdbc:mysql://34.64.176.77:5000/sdz_dev_db
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: sdz
     password: password
