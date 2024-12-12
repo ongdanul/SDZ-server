@@ -61,4 +61,16 @@ public class Product {
     @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Inquiry> inquiries = new ArrayList<>();
+
+    public Product(Long productId /*,Category categoryId, Users userId*/, String productName, int productCount,
+                   Double productAmount, String productContent) {
+        this.productId = productId;
+        //this.categoryId = categoryId;
+        //this.userId = userId;
+        this.productName = productName;
+        this.productCount = productCount;
+        this.productAmount = productAmount;
+        this.productContent = productContent;
+    }
+
 }
