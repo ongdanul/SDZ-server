@@ -1,25 +1,25 @@
 package com.elice.sdz.product.service;
 
+import com.elice.sdz.global.exception.product.OutOfStockException;
+import com.elice.sdz.global.exception.product.ProductNotFoundException;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+
+    private final ProductRepository productRepository;
 
     public Product createProduct(ProductDTO productDTO) {
-
         Product product = new Product(
                 null,
-
                 productDTO.getProductName(),
                 productDTO.getProductCount(),
                 productDTO.getProductAmount(),
@@ -29,8 +29,8 @@ public class ProductService {
     }
 
     public Product getProduct(Long productId) {
-        Optional<Product> product = productRepository.findById(productId);
-        return product.orElse(null);
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다: " + productId));
     }
 
     public List<Product> getAllProducts() {
@@ -39,17 +39,19 @@ public class ProductService {
 
     public Product updateProduct(Long productId, ProductDTO productDTO) {
         Product product = getProduct(productId);
-        if (product != null) {
-            product.setProductName(productDTO.getProductName());
-            product.setProductCount(productDTO.getProductCount());
-            product.setProductAmount(productDTO.getProductAmount());
-            product.setProductContent(productDTO.getProductContent());
-            return productRepository.save(product);
-        }
-        return null;
+
+        product.setProductName(productDTO.getProductName());
+        product.setProductCount(productDTO.getProductCount());
+        product.setProductAmount(productDTO.getProductAmount());
+        product.setProductContent(productDTO.getProductContent());
+
+        return productRepository.save(product);
     }
 
     public void deleteProduct(Long productId) {
+        if (!productRepository.existsById(productId)) {
+            throw new ProductNotFoundException("상품을 찾을 수 없습니다: " + productId);
+        }
         productRepository.deleteById(productId);
     }
 }
