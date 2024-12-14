@@ -1,9 +1,7 @@
 package com.elice.sdz.global.exception;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -11,22 +9,26 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // 상품 관련 에러
-    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCT_NOT_FOUND", "The product does not exist."),
-    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "OUT_OF_STOCK", "The product is out of stock."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCT_NOT_FOUND", "제품이 존재하지 않습니다."),
+    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "OUT_OF_STOCK", "제품이 품절되었습니다."),
 
     // 주문 관련 에러
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "The order does not exist."),
-    INVALID_ORDER(HttpStatus.BAD_REQUEST, "INVALID_ORDER", "The order is invalid."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "주문이 존재하지 않습니다."),
+    INVALID_ORDER(HttpStatus.BAD_REQUEST, "INVALID_ORDER", "주문이 잘못되었습니다."),
 
     // 회원 관련 에러
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "The user does not exist."),
-    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid username or password."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자가 존재하지 않습니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "잘못된 사용자 이름 또는 비밀번호입니다."),
 
     // 결제 관련 에러
-    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_FAILED", "Payment processing failed."),
-    PAYMENT_METHOD_INVALID(HttpStatus.BAD_REQUEST, "PAYMENT_METHOD_INVALID", "Invalid payment method."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_FAILED", "결제 처리에 실패했습니다."),
 
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "An unexpected error occurred.");
+    // 카테고리 관련 에러
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_NOT_FOUND", "카테고리가 존재하지 않습니다."),
+    CATEGORY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CATEGORY_ALREADY_EXISTS", "카테고리 이름이 이미 존재합니다."),
+
+    // 서버 관련 에러
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예기치 않은 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
