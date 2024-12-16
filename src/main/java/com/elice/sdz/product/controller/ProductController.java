@@ -1,6 +1,7 @@
 package com.elice.sdz.product.controller;
 
 import com.elice.sdz.product.dto.ProductDTO;
+import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
@@ -24,8 +26,8 @@ public class ProductController {
 
     // 상품 목록 조회
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
+        List<ProductResponseDTO> products = productService.getAllProducts();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
