@@ -3,12 +3,12 @@ package com.elice.sdz.global.jwt;
 import com.elice.sdz.global.exception.CustomOauth2Exception;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -57,12 +59,13 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     }
 
     private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        JSONObject json = new JSONObject();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> json = new HashMap<>();
         json.put("message", message);
 
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write(json.toString());
+        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 
     public boolean handleLoginFailure(String userId) {

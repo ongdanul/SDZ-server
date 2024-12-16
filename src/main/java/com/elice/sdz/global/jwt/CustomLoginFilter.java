@@ -5,13 +5,13 @@ import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -115,12 +115,13 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
         if (user.isLoginLock()) {
-            JSONObject json = new JSONObject();
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, String> json = new HashMap<>();
             json.put("message", "LOGIN_LOCKED");
 
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType("application/json");
-            response.getWriter().write(json.toString());
+            response.getWriter().write(objectMapper.writeValueAsString(json));
             log.info("User account is locked: {}", user.getUserId());
             return true;
         }
