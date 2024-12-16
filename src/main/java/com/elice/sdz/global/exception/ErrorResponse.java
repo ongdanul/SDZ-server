@@ -1,14 +1,11 @@
 package com.elice.sdz.global.exception;
 
-import ch.qos.logback.core.spi.ErrorCodes;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class ErrorResponse {
 
     private HttpStatus status;
@@ -16,11 +13,11 @@ public class ErrorResponse {
     private String message;
 
     public static ErrorResponse of(ErrorCode errorCode) {
-       return new ErrorResponse(
-               errorCode.getHttpStatus(),
-               errorCode.getErrorCode(),
-               errorCode.getMessage()
-               );
+       return ErrorResponse.builder()
+               .status(errorCode.getHttpStatus())
+               .errorCode(errorCode.getErrorCode())
+               .message(errorCode.getMessage())
+               .build();
     }
 
 }
