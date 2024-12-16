@@ -5,13 +5,17 @@ import com.elice.sdz.category.repository.CategoryRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.product.dto.ProductDTO;
+import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 
+import com.elice.sdz.user.entity.Users;
+import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -19,16 +23,20 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public Product createProduct(ProductDTO productDTO) {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        Users user = userRepository.findById(productDTO.getUserId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         // Product 객체 생성
         Product product = new Product(
                 null,  // productId는 null로 설정 (자동 생성)
                 category,  // categoryId를 Category 객체로 설정
-                //userId,  // userId를 Users 객체로 설정
+                user,  // userId를 Users 객체로 설정
                 productDTO.getProductName(),
                 productDTO.getProductCount(),
                 productDTO.getProductAmount(),
@@ -45,9 +53,19 @@ public class ProductService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponseDTO> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+
+        return products.stream().map(product -> {
+            ProductResponseDTO dto = new ProductResponseDTO();
+            dto.setProductId(product.getProductId());
+            dto.setProductName(product.getProductName());
+            dto.setUserName(product.getUserId().getUserName());
+            dto.setCategoryName(product.getCategoryId().getCategoryName());
+            return dto;
+        }).collect(Collectors.toList());
     }
+
 
     public Product updateProduct(Long productId, ProductDTO productDTO) {
         Product product = getProduct(productId);

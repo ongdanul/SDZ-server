@@ -33,10 +33,10 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category categoryId;
 
-    //@ManyToOne
-    //@JsonBackReference
-    //@JoinColumn(name = "user_id", nullable = false)
-    //private Users userId;
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users userId;
 
     @Column(name = "product_name", length = 50, nullable = false)
     private String productName;
@@ -66,11 +66,11 @@ public class Product {
             orphanRemoval = true)
     private final List<Inquiry> inquiries = new ArrayList<>();
 
-    public Product(Long productId ,Category categoryId,/* Users userId,*/ String productName, int productCount,
+    public Product(Long productId ,Category categoryId, Users userId, String productName, int productCount,
                    Double productAmount, String productContent) {
         this.productId = productId;
         this.categoryId = categoryId;
-        //this.userId = userId;
+        this.userId = userId;
         this.productName = productName;
         this.productCount = productCount;
         this.productAmount = productAmount;
