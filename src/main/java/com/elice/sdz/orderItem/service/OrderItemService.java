@@ -1,5 +1,7 @@
 package com.elice.sdz.orderItem.service;
 
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
 import com.elice.sdz.orderItem.entity.OrderItem;
 import com.elice.sdz.orderItem.entity.OrderItemDetail;
@@ -8,6 +10,7 @@ import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
+import com.elice.sdz.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -23,27 +26,26 @@ public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
     private final OrderItemDetailRepository orderItemDetailRepository;
-//    private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
     // 유저 조회 메서드
     private Users findUserById(String userId) {
-        return new Users();
-//        return userRepository.findById(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     // 상품 조회 메서드
     private Product findByProductId(Long id){
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     // 장바구니 조회 (DTO 반환)
     @Transactional
     public OrderItemDTO getOrderItems(String userId) {
         OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
-                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
         return convertToDTO(orderItem);
     }
@@ -75,6 +77,11 @@ public class OrderItemService {
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
                 .findByOrderItemIdAndProduct(orderItem.getId(), addProduct);
 
+        int currentQuantity = optionalOrderItemDetail.map(OrderItemDetail::getQuantity).orElse(0);
+        if (currentQuantity + quantity > addProduct.getProductCount()) {
+            throw new CustomException(ErrorCode.OUT_OF_STOCK); // 재고 초과 시 예외 발생
+        }
+
         if (optionalOrderItemDetail.isPresent()) {
             // 동일한 물건이 있을 경우 수량 수정
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();
@@ -95,7 +102,7 @@ public class OrderItemService {
     @Transactional
     public void deleteOrderItem(String userId, Long productId, int quantity) {
         OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
-                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
         Product deldteProduct = findByProductId(productId);
 
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
@@ -120,7 +127,7 @@ public class OrderItemService {
     @Transactional
     public void clearOrderItems(String userId) {
         OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
-                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 //        orderItemRepository.delete(orderItem);
         orderItem.getOrderItemDetails().clear();
         orderItem.setRegDate(Timestamp.from(Instant.now()));

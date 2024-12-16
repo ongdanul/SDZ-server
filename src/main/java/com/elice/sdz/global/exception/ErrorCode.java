@@ -29,8 +29,10 @@ public enum ErrorCode {
     CATEGORY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CATEGORY_ALREADY_EXISTS", "카테고리 이름이 이미 존재합니다."),
 
     // 서버 관련 에러
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예기치 않은 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예기치 않은 오류가 발생했습니다."),
 
+    // 장바구니 관련 에러
+    ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_ITEM_NOT_FOUND", "장바구니가 존재하지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
