@@ -4,17 +4,21 @@ import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.review.entity.Review;
+import com.elice.sdz.user.dto.SignUpDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user")
@@ -24,14 +28,14 @@ public class Users {
     @Column(name = "user_id", length = 50)
     private String userId;
 
-    @Column(name = "user_password", length = 20)
+    @Column(name = "user_password", length = 50)
     private String userPassword;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_auth", nullable = false)
     private Auth userAuth;
 
-    @Column(name = "user_name", length = 20)
+    @Column(name = "user_name", length = 50)
     private String userName;
 
     @Column(name = "nickname", length = 20)
@@ -85,5 +89,17 @@ public class Users {
     public enum Auth {
         ROLE_USER,
         ROLE_ADMIN;
+    }
+
+    public Users signUpToEntity (SignUpDTO dto) {
+        return Users.builder()
+                    .userId(dto.getUserId())
+                    .userPassword(dto.getUserPassword())
+                    .userAuth(Auth.ROLE_USER)
+                    .userName(dto.getUserName())
+                    .nickname(Optional.ofNullable(dto.getNickname()).orElse(dto.getUserName()))
+                    .contact(dto.getContact())
+                    .email(dto.getEmail())
+                    .build();
     }
 }
