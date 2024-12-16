@@ -1,10 +1,13 @@
 package com.elice.sdz.product.service;
 
-import com.elice.sdz.global.exception.product.OutOfStockException;
-import com.elice.sdz.global.exception.product.ProductNotFoundException;
+import com.elice.sdz.category.entity.Category;
+import com.elice.sdz.category.repository.CategoryRepository;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,23 +17,32 @@ import java.util.List;
 @Service
 public class ProductService {
 
-
+    private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
 
     public Product createProduct(ProductDTO productDTO) {
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // Product 객체 생성
         Product product = new Product(
-                null,
+                null,  // productId는 null로 설정 (자동 생성)
+                category,  // categoryId를 Category 객체로 설정
+                //userId,  // userId를 Users 객체로 설정
                 productDTO.getProductName(),
                 productDTO.getProductCount(),
                 productDTO.getProductAmount(),
                 productDTO.getProductContent()
         );
+
+        // Product 저장
         return productRepository.save(product);
     }
 
+
     public Product getProduct(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다: " + productId));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     public List<Product> getAllProducts() {
@@ -50,7 +62,7 @@ public class ProductService {
 
     public void deleteProduct(Long productId) {
         if (!productRepository.existsById(productId)) {
-            throw new ProductNotFoundException("상품을 찾을 수 없습니다: " + productId);
+            throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         productRepository.deleteById(productId);
     }

@@ -5,6 +5,8 @@ import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.inquiry.entity.Inquiry;
 import com.elice.sdz.review.entity.Review;
 import com.elice.sdz.user.entity.Users;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,12 +29,14 @@ public class Product {
     private Long productId;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "category_id", nullable = false)
     private Category categoryId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    //@ManyToOne
+    //@JsonBackReference
+    //@JoinColumn(name = "user_id", nullable = false)
+    //private Users userId;
 
     @Column(name = "product_name", length = 50, nullable = false)
     private String productName;
@@ -62,10 +66,10 @@ public class Product {
             orphanRemoval = true)
     private final List<Inquiry> inquiries = new ArrayList<>();
 
-    public Product(Long productId /*,Category categoryId, Users userId*/, String productName, int productCount,
+    public Product(Long productId ,Category categoryId,/* Users userId,*/ String productName, int productCount,
                    Double productAmount, String productContent) {
         this.productId = productId;
-        //this.categoryId = categoryId;
+        this.categoryId = categoryId;
         //this.userId = userId;
         this.productName = productName;
         this.productCount = productCount;
