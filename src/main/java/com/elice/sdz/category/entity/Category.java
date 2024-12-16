@@ -24,9 +24,9 @@ public class Category {
     @Column(name = "category_name", length = 30, nullable = false)
     private String categoryName;
 
-    @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL,
-            orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Product> products = new ArrayList<>();
+//    @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL,
+//            orphanRemoval = true, fetch = FetchType.EAGER)
+//    private List<Product> products = new ArrayList<>();
 
     public Category(String categoryName) {
         this.categoryName = categoryName;
