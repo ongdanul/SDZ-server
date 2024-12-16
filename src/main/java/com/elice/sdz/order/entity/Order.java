@@ -1,5 +1,6 @@
 package com.elice.sdz.order.entity;
 
+import ch.qos.logback.core.status.Status;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,9 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private Status orderStatus; //주문 상태
+
+
+
 
     public enum Status { //주문 상태 나타내는 enum
         PENDING,
