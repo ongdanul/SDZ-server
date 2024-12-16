@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/order-item")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
