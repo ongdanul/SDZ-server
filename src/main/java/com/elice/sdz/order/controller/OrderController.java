@@ -2,6 +2,7 @@ package com.elice.sdz.order.controller;
 
 import com.elice.sdz.order.dto.OrderDto;
 import com.elice.sdz.order.service.OrderService;
+import com.elice.sdz.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,19 +16,19 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping // 전체 주문 조회
+    @GetMapping("/admin") // 전체 주문 조회
     public ResponseEntity<List<OrderDto>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
-
-    @GetMapping("/{orderId}") // 특정 주문 조회
-    public ResponseEntity<OrderDto> getOrderById(@PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.getOrderById(orderId));
+    @GetMapping("/user/{userId}") //사용자의 모든 주문 목록
+    public ResponseEntity<List<OrderDto>> getUserOrders(@PathVariable Users userId) {
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 
-    @PostMapping // 새 주문
-    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto) {
-        return ResponseEntity.ok(orderService.createOrder(orderDto));
+
+    @PostMapping("/user/{userId}") // 새 주문
+    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto, @PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.createOrder(orderDto, userId));
     }
 
     @PutMapping("/{orderId}") // 주문 업데이트
