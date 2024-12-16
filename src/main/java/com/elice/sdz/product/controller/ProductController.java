@@ -3,6 +3,7 @@ package com.elice.sdz.product.controller;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/products")
 public class ProductController {
 
     private final ProductService productService;
 
 
-    @Autowired // 생성자 1개 경우 생략 가능
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     // 상품 목록 조회
     @GetMapping
