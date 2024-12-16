@@ -1,4 +1,4 @@
-package com.elice.sdz.user.controller;
+package com.elice.sdz.user.controller.apiDocs;
 
 import com.elice.sdz.user.dto.SignUpDTO;
 import com.elice.sdz.user.dto.UpdateLocalDTO;

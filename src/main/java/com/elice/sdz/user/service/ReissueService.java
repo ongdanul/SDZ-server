@@ -4,16 +4,18 @@ import com.elice.sdz.global.config.CookieUtils;
 import com.elice.sdz.global.jwt.JWTUtil;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.repository.RefreshRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.elice.sdz.global.config.SecurityConstants.*;
 
@@ -85,12 +87,13 @@ public class ReissueService {
     }
 
     private void sendJsonResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        JSONObject json = new JSONObject();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> json = new HashMap<>();
         json.put("message", message);
 
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write(json.toString());
+        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 
     private void addRefreshToken(String username, String refresh) {

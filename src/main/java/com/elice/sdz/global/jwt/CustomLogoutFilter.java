@@ -2,6 +2,7 @@ package com.elice.sdz.global.jwt;
 
 import com.elice.sdz.global.config.CookieUtils;
 import com.elice.sdz.user.repository.RefreshRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -79,11 +82,12 @@ public class CustomLogoutFilter implements Filter {
     }
 
     private void sendJsonResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        JSONObject json = new JSONObject();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> json = new HashMap<>();
         json.put("message", message);
 
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write(json.toString());
+        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 }

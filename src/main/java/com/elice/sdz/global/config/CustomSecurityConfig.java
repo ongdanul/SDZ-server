@@ -73,9 +73,10 @@ public class CustomSecurityConfig {
 
         //접근 권한 설정
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/account/**", "/api/user/sign-up", "/api/check/**", "/oauth2/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated())
                 //로그인 설정

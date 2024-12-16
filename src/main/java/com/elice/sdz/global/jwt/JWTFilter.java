@@ -3,6 +3,7 @@ package com.elice.sdz.global.jwt;
 import com.elice.sdz.user.dto.CustomUserDetails;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.service.ReissueService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,13 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,7 +56,7 @@ public class JWTFilter extends OncePerRequestFilter {
             user.setUserId(jwtUtil.getUsername(accessToken));
             user.setUserAuth(Users.Auth.valueOf(jwtUtil.getRole(accessToken)));
 
-            CustomUserDetails customUserDetails = new CustomUserDetails(user, jwtUtil);
+            CustomUserDetails customUserDetails = new CustomUserDetails(user);
             Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (ExpiredJwtException e) {
@@ -84,11 +86,12 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     private void sendJsonResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        JSONObject json = new JSONObject();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> json = new HashMap<>();
         json.put("message", message);
 
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write(json.toString());
+        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 }

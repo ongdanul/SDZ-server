@@ -4,6 +4,8 @@ import com.elice.sdz.user.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,8 @@ public interface UserRepository extends JpaRepository<Users, String> {
     Optional<Users> findByUserIdAndUserName(String userId, String userName);
 
     //Verification
-    String findPasswordByUserId(String userId);
+    @Query("SELECT u.userPassword FROM Users u WHERE u.userId = :userId")
+    String findPasswordByUserId(@Param("userId") String userId);
     boolean existsByUserId(String userId);
     boolean existsByNickname(String nickname);
     boolean existsByUserIdAndUserName(String userId, String userName);

@@ -1,5 +1,6 @@
 package com.elice.sdz.user.controller;
 
+import com.elice.sdz.user.controller.apiDocs.UserApiDocs;
 import com.elice.sdz.user.dto.*;
 import com.elice.sdz.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;

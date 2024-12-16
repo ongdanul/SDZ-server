@@ -63,7 +63,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     return loadExistingSocialUser(user, oAuth2UserInfo);
                 })
                 .orElseGet(() -> {
-                    socialRepository.findByProviderAndProviderId(provider, providerId)
+                    socialRepository.findBySocialProviderAndSocialProviderId(provider, providerId)
                             .ifPresent(socialUser -> {
                                 log.warn("Social user already exists: {}", socialUser.getUserId());
                                 throw new CustomOauth2Exception("해당 소셜 계정으로 이미 가입되어 있습니다.");

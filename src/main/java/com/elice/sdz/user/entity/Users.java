@@ -28,7 +28,7 @@ public class Users {
     @Column(name = "user_id", length = 50)
     private String userId;
 
-    @Column(name = "user_password", length = 50)
+    @Column(name = "user_password")
     private String userPassword;
 
     @Enumerated(EnumType.STRING)
@@ -89,6 +89,13 @@ public class Users {
     public enum Auth {
         ROLE_USER,
         ROLE_ADMIN;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (regDate == null) {
+            regDate = Instant.now();
+        }
     }
 
     public Users signUpToEntity (SignUpDTO dto) {

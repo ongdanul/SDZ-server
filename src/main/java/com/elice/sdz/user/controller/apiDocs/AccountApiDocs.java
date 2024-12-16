@@ -1,4 +1,4 @@
-package com.elice.sdz.user.controller;
+package com.elice.sdz.user.controller.apiDocs;
 
 import com.elice.sdz.user.entity.Users;
 import io.swagger.v3.oas.annotations.Operation;

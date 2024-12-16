@@ -1,5 +1,6 @@
 package com.elice.sdz.user.controller;
 
+import com.elice.sdz.user.controller.apiDocs.VerificationApiDocs;
 import com.elice.sdz.user.service.UserService;
 import com.elice.sdz.user.service.VerificationService;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,7 @@ public class VerificationController implements VerificationApiDocs {
     public ResponseEntity<Map<String, Boolean>> checkPassword(@RequestBody Map<String, String> requestBody) {
 
         String userId = requestBody.get("userId");
-        String inputPassword = requestBody.get("pw");
+        String inputPassword = requestBody.get("userPassword");
         boolean valid = verificationService.checkPassword(userId, inputPassword);
 
         Map<String, Boolean> response = new HashMap<>();

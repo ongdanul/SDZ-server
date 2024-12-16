@@ -31,6 +31,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("Test - CustomUserDetailsService : user: {}", user);
         log.info("Test - CustomUserDetailsService : userId: {}, userPassword: {}", user.getUserId(), user.getUserPassword());
 
-        return new CustomUserDetails(user, jwtUtil);
+        return new CustomUserDetails(user);
     }
 }

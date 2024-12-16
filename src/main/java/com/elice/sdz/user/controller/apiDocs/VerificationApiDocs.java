@@ -1,4 +1,4 @@
-package com.elice.sdz.user.controller;
+package com.elice.sdz.user.controller.apiDocs;
 
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
