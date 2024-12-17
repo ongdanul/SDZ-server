@@ -1,13 +1,17 @@
 package com.elice.sdz.delivery.entity;
 
+import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
+import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "delivery_address")
@@ -18,7 +22,7 @@ public class DeliveryAddress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deliveryAddressId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private Users userId;
 
@@ -43,4 +47,17 @@ public class DeliveryAddress {
     @Column(name = "default_check", nullable = false,
             columnDefinition = "BIT(1) DEFAULT 0")
     private boolean defaultCheck;
+
+    public static DeliveryAddress deliveryAddressToEntity (DeliveryAddressDTO dto, Users user) {
+        return DeliveryAddress.builder()
+                .userId(user)
+                .deliveryAddress1(dto.getDeliveryAddress1())
+                .deliveryAddress2(dto.getDeliveryAddress2())
+                .deliveryAddress3(dto.getDeliveryAddress3())
+                .receiverName(dto.getReceiverName())
+                .receiverContact(dto.getReceiverContact())
+                .deliveryRequest(dto.getDeliveryRequest())
+                .defaultCheck(dto.isDefaultCheck())
+                .build();
+    }
 }

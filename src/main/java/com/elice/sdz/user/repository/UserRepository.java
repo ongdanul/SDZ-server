@@ -28,8 +28,10 @@ public interface UserRepository extends JpaRepository<Users, String> {
     boolean existsByUserIdAndUserName(String userId, String userName);
 
     //Admin
+    Page<Users> findBySocialTrue(Pageable pageable);
+    Page<Users> findBySocialFalse(Pageable pageable);
+    Page<Users> findByUserIdContaining(String userId, Pageable pageable);
     Page<Users> findByUserIdContainingAndSocialTrue(String userId, Pageable pageable);
     Page<Users> findByUserIdContainingAndSocialFalse(String userId, Pageable pageable);
-
-    String findEmailByUserId(String userId);
+    void deleteAllByUserIdIn(List<String> userIds);
 }

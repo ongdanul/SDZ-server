@@ -75,7 +75,7 @@ public class CustomSecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/account/**", "/api/user/sign-up", "/api/check/**", "/oauth2/**").permitAll()
-                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**").permitAll()
+                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated())

@@ -95,10 +95,10 @@ public class Users {
     public void prePersist() {
         if (regDate == null) {
             regDate = Instant.now();
-        }
+            }
     }
 
-    public Users signUpToEntity (SignUpDTO dto) {
+    public static Users signUpToEntity (SignUpDTO dto) {
         return Users.builder()
                     .userId(dto.getUserId())
                     .userPassword(dto.getUserPassword())

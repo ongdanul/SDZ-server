@@ -38,7 +38,7 @@ public class UserService {
         }
 
         signUpDTO.setUserPassword(bCryptPasswordEncoder.encode(signUpDTO.getUserPassword()));
-        Users user = new Users().signUpToEntity(signUpDTO);
+        Users user = Users.signUpToEntity(signUpDTO);
 
         try {
             userRepository.save(user);
@@ -71,40 +71,34 @@ public class UserService {
     }
 
     @Transactional
-    public void updateByLocalUser(UpdateLocalDTO updateLocalDTO) {
-        userRepository.findByUserId(updateLocalDTO.getUserId())
+    public void updateLocalUser(UpdateLocalDTO updateLocalDTO) {
+        Users user = userRepository.findByUserId(updateLocalDTO.getUserId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String userPassword = updateLocalDTO.getUserPassword();
         String encodedPassword = !StringUtils.hasText(userPassword) ?
                 updateLocalDTO.getUserPassword() : bCryptPasswordEncoder.encode(userPassword);
 
-        Users updatedUser = Users.builder()
-                .userId(updateLocalDTO.getUserId())
-                .userPassword(encodedPassword)
-                .userName(updateLocalDTO.getUserName())
-                .nickname(updateLocalDTO.getNickname())
-                .contact(updateLocalDTO.getContact())
-                .email(updateLocalDTO.getEmail())
-                .build();
+        user.setUserPassword(bCryptPasswordEncoder.encode(encodedPassword));
+        user.setUserName(updateLocalDTO.getUserName());
+        user.setNickname(updateLocalDTO.getNickname());
+        user.setContact(updateLocalDTO.getContact());
+        user.setEmail(updateLocalDTO.getEmail());
 
-        userRepository.save(updatedUser);
+        userRepository.save(user);
     }
 
     @Transactional
-    public void updateBySocialUser(UpdateSocialDTO updateSocialDTO) {
-        userRepository.findByUserId(updateSocialDTO.getUserId())
+    public void updateSocialUser(UpdateSocialDTO updateSocialDTO) {
+        Users user = userRepository.findByUserId(updateSocialDTO.getUserId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        Users updatedUser = Users.builder()
-                .userId(updateSocialDTO.getUserId())
-                .userName(updateSocialDTO.getUserName())
-                .nickname(updateSocialDTO.getNickname())
-                .contact(updateSocialDTO.getContact())
-                .email(updateSocialDTO.getEmail())
-                .build();
+        user.setUserName(updateSocialDTO.getUserName());
+        user.setNickname(updateSocialDTO.getNickname());
+        user.setContact(updateSocialDTO.getContact());
+        user.setEmail(updateSocialDTO.getEmail());
 
-        userRepository.save(updatedUser);
+        userRepository.save(user);
     }
 
     //TODO : 첨부파일 기능 완성 이후에 프로필 사진 변경 기능 연결 할 것.
@@ -122,10 +116,10 @@ public class UserService {
 
     @Transactional
     public void deleteByUser(HttpServletResponse response, String userId) {
-        userRepository.findByUserId(userId)
+        Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        userRepository.deleteById(userId);
+        userRepository.delete(user);
         refreshRepository.deleteAllByUserId(userId);
         CookieUtils.deleteCookie(response, "refresh");
     }
