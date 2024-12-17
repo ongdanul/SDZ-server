@@ -12,8 +12,7 @@ import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -87,6 +86,7 @@ public class OrderItemService {
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();
             orderItemDetail.setQuantity(orderItemDetail.getQuantity() + quantity);
             orderItemDetailRepository.save(orderItemDetail);
+            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
         } else {
             // 동일한 물건이 없을 경우 새로 추가
             OrderItemDetail orderItemDetail = new OrderItemDetail();
@@ -94,8 +94,8 @@ public class OrderItemService {
             orderItemDetail.setProduct(addProduct);
             orderItemDetail.setQuantity(quantity);
             orderItemDetailRepository.save(orderItemDetail);
+            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
         }
-        orderItem.setRegDate(Timestamp.from(Instant.now()));
     }
 
     // 장바구니 상품 삭제
@@ -119,7 +119,7 @@ public class OrderItemService {
                 orderItem.getOrderItemDetails().remove(orderItemDetail); // 리스트에서 제거
                 orderItemDetailRepository.delete(orderItemDetail); // DB에서 삭제
             }
-            orderItem.setRegDate(Timestamp.from(Instant.now()));
+            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
         }
     }
 
@@ -130,8 +130,8 @@ public class OrderItemService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 //        orderItemRepository.delete(orderItem);
         orderItem.getOrderItemDetails().clear();
-        orderItem.setRegDate(Timestamp.from(Instant.now()));
         orderItemRepository.save(orderItem);
+        orderItem.setUpdatedAt(LocalDateTime.now());
     }
 
     // 장바구니 생성 및 찾기
@@ -140,7 +140,6 @@ public class OrderItemService {
         if (optionalOrderItem.isEmpty()) {
             OrderItem orderItem = new OrderItem();
             orderItem.setUserId(findUserById(userId));
-            orderItem.setRegDate(Timestamp.from(Instant.now()));
             return orderItemRepository.save(orderItem);
         } else {
             return optionalOrderItem.get();
