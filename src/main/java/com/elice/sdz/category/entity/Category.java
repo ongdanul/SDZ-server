@@ -1,8 +1,10 @@
 package com.elice.sdz.category.entity;
 
+import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "category")
@@ -30,5 +33,12 @@ public class Category {
 
     public Category(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public CategoryResponseDTO toResponseDTO() {
+        return CategoryResponseDTO.builder()
+                .categoryId(categoryId)
+                .categoryName(categoryName)
+                .build();
     }
 }

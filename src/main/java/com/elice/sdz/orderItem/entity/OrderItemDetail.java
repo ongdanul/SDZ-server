@@ -1,6 +1,8 @@
 package com.elice.sdz.orderItem.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.product.entity.Product;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,14 +20,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "order_item_detail")
-public class OrderItemDetail {
+public class OrderItemDetail extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_detail_id", nullable = false)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "order_item_id", nullable = false)
     private OrderItem orderItem;
 
