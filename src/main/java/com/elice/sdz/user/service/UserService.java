@@ -72,11 +72,11 @@
             Users user = userRepository.findByUserId(updateLocalDTO.getUserId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            String encodedPassword = updateLocalDTO.getUserPassword() != null ?
-                    bCryptPasswordEncoder.encode(updateLocalDTO.getUserPassword()) : null;
+            String userPassword = updateLocalDTO.getUserPassword();
+            String encodedPassword = !StringUtils.hasText(userPassword) ?
+                    user.getUserPassword() : bCryptPasswordEncoder.encode(userPassword);
 
             updateLocalDTO.updateEntity(user, encodedPassword);
-
             userRepository.save(user);
         }
 
