@@ -1,11 +1,12 @@
 package com.elice.sdz.global.jwt;
 
 import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -18,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
@@ -80,11 +80,11 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = authorities.stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .orElseThrow(() -> new IllegalStateException("Authorization is missing."));
+                .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
         Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() ->
-                    new UsernameNotFoundException("User not found"));
+                    new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (isUserLoginLocked(response, user)) {
             return;
@@ -115,15 +115,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
         if (user.isLoginLock()) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> json = new HashMap<>();
-            json.put("message", "LOGIN_LOCKED");
-
-            response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.setContentType("application/json");
-            response.getWriter().write(objectMapper.writeValueAsString(json));
-            log.info("User account is locked: {}", user.getUserId());
-            return true;
+            log.info("회원 아이디가 잠금 상태입니다: {}", user.getUserId());
+            throw new CustomException(ErrorCode.LOGIN_LOCKED);
         }
         return false;
     }
@@ -135,7 +128,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             try {
                 userRepository.save(user);
             } catch (Exception e) {
-                log.error("Error occurred while resetting login attempts for user: {}", user.getUserId(), e);
+                log.error("회원 로그인 시도 횟수 초기화 중 오류 발생: {}", user.getUserId(), e);
             }
         }
     }

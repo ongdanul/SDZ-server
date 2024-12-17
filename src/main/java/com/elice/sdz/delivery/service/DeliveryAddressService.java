@@ -4,6 +4,8 @@ import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.delivery.repository.DeliveryAddressRepository;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.PageRequestDTO;
 import com.elice.sdz.user.dto.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
@@ -48,34 +50,34 @@ public class DeliveryAddressService {
 
     private Page<DeliveryAddress> findAddressesByUserId(String userId, Pageable pageable) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
         return deliveryAddressRepository.findAllByUserId(user, pageable);
     }
 
     public void createNewAddress (DeliveryAddressDTO deliveryAddressDTO) {
         Users user = userRepository.findByUserId(deliveryAddressDTO.getUserId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = DeliveryAddress.deliveryAddressToEntity(deliveryAddressDTO, user);
         try {
             deliveryAddressRepository.save(deliveryAddress);
-            log.info("Create New DeliveryAddress successfully");
+            log.info("새 배송 주소가 성공적으로 생성되었습니다.");
         } catch (Exception e) {
-            log.error("Error occurred during the create New deliveryAddress process: {}", e.getMessage(), e);
-            throw new RuntimeException("An error occurred during the create New deliveryAddress process.");
+            log.error("배송 주소 생성 중 오류가 발생했습니다: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Transactional
     public void updateAddress(Long deliveryAddressId, DeliveryAddressDTO deliveryAddressDTO) {
         Users user = userRepository.findByUserId(deliveryAddressDTO.getUserId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
-                .orElseThrow(() -> new IllegalArgumentException("DeliveryAddress not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if (!deliveryAddress.getUserId().getUserId().equals(user.getUserId())) {
-            throw new AccessDeniedException("You do not have permission to update this address");
+            throw new AccessDeniedException("이 주소를 수정할 권한이 없습니다.");
         }
 
         deliveryAddress.setUserId(user);
@@ -88,21 +90,22 @@ public class DeliveryAddressService {
         deliveryAddress.setDefaultCheck(deliveryAddressDTO.isDefaultCheck());
         try {
             deliveryAddressRepository.save(deliveryAddress);
-            log.info("Update DeliveryAddress successfully");
+            log.info("배송 주소가 성공적으로 수정되었습니다.");
         } catch (Exception e) {
-            log.error("Error occurred during the update deliveryAddress process: {}", e.getMessage(), e);
-            throw new RuntimeException("An error occurred during the update deliveryAddress process.");
+            log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Transactional
     public void deleteAddress(Long deliveryAddressId, String userId) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
-                .orElseThrow(() -> new IllegalArgumentException("DeliveryAddress not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if(!deliveryAddress.getUserId().getUserId().equals(userId)) {
-            throw new AccessDeniedException("You do not have permission to delete this address");
+            throw new AccessDeniedException("삭제할 권한이 없습니다.");
         }
         deliveryAddressRepository.delete(deliveryAddress);
+        log.info("배송 주소가 성공적으로 삭제되었습니다.");
     }
 }

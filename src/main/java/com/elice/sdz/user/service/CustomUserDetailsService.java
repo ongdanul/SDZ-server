@@ -1,6 +1,5 @@
 package com.elice.sdz.user.service;
 
-import com.elice.sdz.global.jwt.JWTUtil;
 import com.elice.sdz.user.dto.CustomUserDetails;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
@@ -16,18 +15,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
-        Users user = userRepository.findByUserId(username)
+        Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found with userId: {}", username);
-                    return new UsernameNotFoundException("User not found");
+                    log.error("회원이 존재하지 않습니다.: {}", userId);
+                    return new UsernameNotFoundException("회원이 존재하지 않습니다.");
                 });
-        log.info("Test - CustomUserDetailsService : userName: {}", username);
+        log.info("Test - CustomUserDetailsService : userName: {}", userId);
         log.info("Test - CustomUserDetailsService : user: {}", user);
         log.info("Test - CustomUserDetailsService : userId: {}, userPassword: {}", user.getUserId(), user.getUserPassword());
 

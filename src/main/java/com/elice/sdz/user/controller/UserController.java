@@ -31,19 +31,19 @@ public class UserController implements UserApiDocs {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
             response.put("success", false);
-            response.put("message", "The input values are not valid.");
+            response.put("message", "입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         boolean isSignedUp = userService.signUpProcess(signUpDTO);
         if (isSignedUp) {
             response.put("success", true);
-            response.put("message", "Sign-up successful.");
+            response.put("message", "회원가입이 성공적으로 완료되었습니다.");
             response.put("userName", signUpDTO.getUserName());
             return ResponseEntity.ok(response);
         } else {
             response.put("success", false);
-            response.put("message", "Sign-up failed. Please try again.");
+            response.put("message", "회원가입에 실패했습니다. 다시 시도해 주세요.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -62,14 +62,14 @@ public class UserController implements UserApiDocs {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
             response.put("success", false);
-            response.put("message", "The input values are not valid.");
+            response.put("message", "입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         updateLocalDTO.setUserId(authenticationService.getCurrentUserId());
         userService.updateLocalUser(updateLocalDTO);
         response.put("success", true);
-        response.put("message", "Local user updated successfully.");
+        response.put("message", "일반 회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -80,21 +80,21 @@ public class UserController implements UserApiDocs {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
             response.put("success", false);
-            response.put("message", "The input values are not valid.");
+            response.put("message", "입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         updateSocialDTO.setUserId(authenticationService.getCurrentUserId());
         userService.updateSocialUser(updateSocialDTO);
         response.put("success", true);
-        response.put("message", "Social user updated successfully.");
+        response.put("message", "소셜 회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("#userId == authentication.name")
     public ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("userId") String userId) {
-        userService.deleteByUser(response, userId);
+        userService.deleteUser(response, userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

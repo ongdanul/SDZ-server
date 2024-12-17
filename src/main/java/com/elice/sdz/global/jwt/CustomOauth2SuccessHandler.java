@@ -1,6 +1,8 @@
 package com.elice.sdz.global.jwt;
 
 import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomOAuth2User;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.repository.RefreshRepository;
@@ -27,7 +29,6 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
-    private final UserRepository userRepository;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -37,7 +38,7 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         String role = authorities.stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .orElseThrow(() -> new IllegalStateException("Authorization is missing."));
+                .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
         String access = jwtUtil.createJwt("access", userId, role, ACCESS_TOKEN_EXPIRATION);
         String refresh = jwtUtil.createJwt("refresh", userId, role, REFRESH_TOKEN_EXPIRATION);
@@ -49,10 +50,10 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         response.setStatus(HttpStatus.OK.value());
     }
 
-    private void addRefreshToken(String username, String refresh) {
+    private void addRefreshToken(String userId, String refresh) {
         Date date = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
         RefreshToken refreshToken = RefreshToken.builder()
-                .userId(username)
+                .userId(userId)
                 .refresh(refresh)
                 .expiration(date.toString())
                 .build();

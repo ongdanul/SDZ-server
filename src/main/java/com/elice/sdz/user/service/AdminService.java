@@ -1,5 +1,7 @@
 package com.elice.sdz.user.service;
 
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.PageRequestDTO;
 import com.elice.sdz.user.dto.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
@@ -9,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,7 @@ public class AdminService {
         String keyword = pageRequestDTO.getKeyword().trim();
         String type = pageRequestDTO.getType().trim();
 
-        if (keyword == null || keyword.isEmpty()) {
+        if (keyword.isEmpty()) {
             return getUserListByType(type, pageable);
         }
 
@@ -57,14 +58,11 @@ public class AdminService {
             return userRepository.findAll(pageable);
         }
 
-        switch (type) {
-            case "local":
-                return userRepository.findBySocialFalse(pageable);
-            case "social":
-                return userRepository.findBySocialTrue(pageable);
-            default:
-                throw new IllegalArgumentException("Invalid type: " + type);
-        }
+        return switch (type) {
+            case "local" -> userRepository.findBySocialFalse(pageable);
+            case "social" -> userRepository.findBySocialTrue(pageable);
+            default -> throw new CustomException(ErrorCode.INVALID_TYPE);
+        };
     }
 
     private Page<Users> getUserListByKeywordAndType(String keyword, String type, Pageable pageable) {
@@ -79,14 +77,13 @@ public class AdminService {
         if ("social".equals(type)) {
             return userRepository.findByUserIdContainingAndSocialTrue(keyword, pageable);
         }
-
-        throw new IllegalArgumentException("Invalid type: " + type);
+        throw new CustomException(ErrorCode.INVALID_TYPE);
     }
 
     @Transactional
     public void updateLoginLock(String userId){
         Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.setLoginLock(!user.isLoginLock());
         userRepository.save(user);
@@ -95,7 +92,7 @@ public class AdminService {
     @Transactional
     public void updateAuth(String userId){
         Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         boolean userAuth = user.getUserAuth().name().equals("ROLE_USER");
         if(userAuth) {
@@ -109,7 +106,7 @@ public class AdminService {
     @Transactional
     public void adminDeleteUser(String userId) {
         Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
     }
@@ -117,12 +114,12 @@ public class AdminService {
     @Transactional
     public void adminDeleteByUserIds(List<String> userIds) {
         if (userIds.isEmpty()) {
-            throw new IllegalArgumentException("No user IDs to delete.");
+            throw new CustomException(ErrorCode.NO_USER_IDS_TO_DELETE);
         }
 
         List<Users> users = userRepository.findAllById(userIds);
         if (users.size() != userIds.size()) {
-            throw new IllegalArgumentException("user IDs do not exist.");
+            throw new CustomException(ErrorCode.USER_IDS_NOT_EXIST);
         }
 
         userRepository.deleteAllByUserIdIn(userIds);

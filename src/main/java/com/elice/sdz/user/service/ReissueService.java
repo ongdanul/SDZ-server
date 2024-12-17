@@ -1,10 +1,11 @@
 package com.elice.sdz.user.service;
 
 import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.global.jwt.JWTUtil;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.repository.RefreshRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.elice.sdz.global.config.SecurityConstants.*;
 
@@ -25,7 +23,7 @@ import static com.elice.sdz.global.config.SecurityConstants.*;
 public class ReissueService {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
-    public boolean reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public boolean reissue(HttpServletRequest request, HttpServletResponse response) {
         String refresh = CookieUtils.getCookieValue(request, "refresh");
 
         if (refresh == null) {
@@ -33,7 +31,7 @@ public class ReissueService {
             return false;
         }
 
-        if (!validateRefreshToken(refresh, response)) {
+        if (!validateRefreshToken(refresh)) {
             return false;
         }
 
@@ -53,47 +51,29 @@ public class ReissueService {
 
         return true;
     }
-    private boolean validateRefreshToken(String refresh, HttpServletResponse response) throws IOException {
+    private boolean validateRefreshToken(String refresh) {
         try {
-            if (jwtUtil.isExpired(refresh)) {
-                log.warn("Expired refresh token: {}", refresh);
-                sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Expired refresh token");
-                return false;
-            }
+            jwtUtil.isExpired(refresh);
 
             if (!jwtUtil.isValidCategory(refresh, "refresh")) {
-                log.warn("Invalid token category: {}", refresh);
-                sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid token category");
-                return false;
+                log.warn("토큰 카테고리가 불일치합니다.: {}", refresh);
+                throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
             }
 
-            if (!refreshRepository.existsByRefresh(refresh)) {
-                log.warn("Refresh token not found in DB: {}", refresh);
-                sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh token not found in DB");
-                return false;
+            if (Boolean.FALSE.equals(refreshRepository.existsByRefresh(refresh))) {
+                log.warn("DB에 리프레시 토큰이 존재하지 않습니다: {}", refresh);
+                throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
             }
 
         } catch (ExpiredJwtException e) {
-            log.warn("Expired refresh token: {}", refresh);
-            sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Expired refresh token");
-            return false;
+            log.warn("만료된 리프레시 토큰입니다.: {}", refresh);
+            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
         } catch (Exception e) {
-            log.error("Error validating refresh token: {}", refresh, e);
-            sendJsonResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Token validation error");
-            return false;
+            log.error("리프레시 토큰 검증 중 오류가 발생하였습니다.: {}", refresh, e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         return true;
-    }
-
-    private void sendJsonResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> json = new HashMap<>();
-        json.put("message", message);
-
-        response.setStatus(statusCode);
-        response.setContentType("application/json");
-        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 
     private void addRefreshToken(String username, String refresh) {
