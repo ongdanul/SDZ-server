@@ -1,6 +1,7 @@
 package com.elice.sdz.category.service;
 
 import com.elice.sdz.category.dto.CategoryRequestDTO;
+import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.category.entity.Category;
 import com.elice.sdz.category.repository.CategoryRepository;
 import com.elice.sdz.global.exception.CustomException;
@@ -16,26 +17,28 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public Category createCategory(CategoryRequestDTO categoryRequestDTO) {
+    public CategoryResponseDTO createCategory(CategoryRequestDTO categoryRequestDTO) {
         Category newCategory = categoryRequestDTO.toEntity();
 
         if (categoryRepository.findByCategoryName(newCategory.getCategoryName()).isPresent()) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
 
-        return categoryRepository.save(newCategory);
+        return categoryRepository.save(newCategory).toResponseDTO();
     }
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponseDTO> getAllCategories() {
+        return categoryRepository.findAll().stream().map(Category::toResponseDTO).toList();
     }
 
-    public Category getCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId)
+    public CategoryResponseDTO getCategoryById(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        return category.toResponseDTO();
     }
 
-    public Category updateCategory(Long categoryId, CategoryRequestDTO categoryRequestDTO) {
+    public CategoryResponseDTO updateCategory(Long categoryId, CategoryRequestDTO categoryRequestDTO) {
         Category existingCategory = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
@@ -45,7 +48,7 @@ public class CategoryService {
 
         existingCategory.setCategoryName(categoryRequestDTO.getCategoryName());
 
-        return categoryRepository.save(existingCategory);
+        return categoryRepository.save(existingCategory).toResponseDTO();
     }
 
     public void deleteCategory(Long categoryId) {
