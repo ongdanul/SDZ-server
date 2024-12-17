@@ -94,12 +94,9 @@ public class AdminService {
         Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        boolean userAuth = user.getUserAuth().name().equals("ROLE_USER");
-        if(userAuth) {
-            user.setUserAuth(Users.Auth.ROLE_ADMIN);
-        } else  {
-            user.setUserAuth(Users.Auth.ROLE_USER);
-        }
+        user.setUserAuth(user.getUserAuth() == Users.Auth.ROLE_USER
+                ? Users.Auth.ROLE_ADMIN
+                : Users.Auth.ROLE_USER);
         userRepository.save(user);
     }
 

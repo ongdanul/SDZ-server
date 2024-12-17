@@ -58,7 +58,7 @@ public class DeliveryAddressService {
         Users user = userRepository.findByUserId(deliveryAddressDTO.getUserId())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = DeliveryAddress.deliveryAddressToEntity(deliveryAddressDTO, user);
+        DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
         try {
             deliveryAddressRepository.save(deliveryAddress);
             log.info("새 배송 주소가 성공적으로 생성되었습니다.");
@@ -80,14 +80,7 @@ public class DeliveryAddressService {
             throw new AccessDeniedException("이 주소를 수정할 권한이 없습니다.");
         }
 
-        deliveryAddress.setUserId(user);
-        deliveryAddress.setDeliveryAddress1(deliveryAddressDTO.getDeliveryAddress1());
-        deliveryAddress.setDeliveryAddress2(deliveryAddressDTO.getDeliveryAddress2());
-        deliveryAddress.setDeliveryAddress3(deliveryAddressDTO.getDeliveryAddress3());
-        deliveryAddress.setReceiverName(deliveryAddressDTO.getReceiverName());
-        deliveryAddress.setReceiverContact(deliveryAddressDTO.getReceiverContact());
-        deliveryAddress.setDeliveryRequest(deliveryAddressDTO.getDeliveryRequest());
-        deliveryAddress.setDefaultCheck(deliveryAddressDTO.isDefaultCheck());
+        deliveryAddressDTO.updateEntity(deliveryAddress, user);
         try {
             deliveryAddressRepository.save(deliveryAddress);
             log.info("배송 주소가 성공적으로 수정되었습니다.");

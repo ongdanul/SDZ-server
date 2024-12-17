@@ -39,7 +39,7 @@
             }
 
             signUpDTO.setUserPassword(bCryptPasswordEncoder.encode(signUpDTO.getUserPassword()));
-            Users user = Users.signUpToEntity(signUpDTO);
+            Users user = signUpDTO.toEntity();
 
             try {
                 userRepository.save(user);
@@ -64,16 +64,7 @@
             Users user = userRepository.findByUserId(userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            return UserDetailDTO.builder()
-                    .userId(user.getUserId())
-                    .userPassword(user.getUserPassword())
-                    .userName(user.getUserName())
-                    .nickname(user.getNickname())
-                    .contact(user.getContact())
-                    .email(user.getEmail())
-                    .social(user.isSocial())
-                    .profileUrl(user.getProfileUrl())
-                    .build();
+            return UserDetailDTO.toDTO(user);
         }
 
         @Transactional
@@ -81,15 +72,10 @@
             Users user = userRepository.findByUserId(updateLocalDTO.getUserId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            String userPassword = updateLocalDTO.getUserPassword();
-            String encodedPassword = !StringUtils.hasText(userPassword) ?
-                    updateLocalDTO.getUserPassword() : bCryptPasswordEncoder.encode(userPassword);
+            String encodedPassword = updateLocalDTO.getUserPassword() != null ?
+                    bCryptPasswordEncoder.encode(updateLocalDTO.getUserPassword()) : null;
 
-            user.setUserPassword(bCryptPasswordEncoder.encode(encodedPassword));
-            user.setUserName(updateLocalDTO.getUserName());
-            user.setNickname(updateLocalDTO.getNickname());
-            user.setContact(updateLocalDTO.getContact());
-            user.setEmail(updateLocalDTO.getEmail());
+            updateLocalDTO.updateEntity(user, encodedPassword);
 
             userRepository.save(user);
         }
@@ -99,10 +85,7 @@
             Users user = userRepository.findByUserId(updateSocialDTO.getUserId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            user.setUserName(updateSocialDTO.getUserName());
-            user.setNickname(updateSocialDTO.getNickname());
-            user.setContact(updateSocialDTO.getContact());
-            user.setEmail(updateSocialDTO.getEmail());
+            updateSocialDTO.updateEntity(user);
 
             userRepository.save(user);
         }

@@ -1,5 +1,6 @@
 package com.elice.sdz.user.dto;
 
+import com.elice.sdz.user.entity.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -26,4 +27,17 @@ public class UserDetailDTO {
     private boolean social;
 
     private String profileUrl;
+
+    public static UserDetailDTO toDTO(Users user) {
+        return UserDetailDTO.builder()
+                .userId(user.getUserId())
+                .userPassword(user.getUserPassword())
+                .userName(user.getUserName())
+                .nickname(user.getNickname())
+                .contact(user.getContact())
+                .email(user.getEmail())
+                .social(user.isSocial())
+                .profileUrl(user.getProfileUrl())
+                .build();
+    }
 }

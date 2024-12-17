@@ -97,16 +97,4 @@ public class Users {
             regDate = Instant.now();
             }
     }
-
-    public static Users signUpToEntity (SignUpDTO dto) {
-        return Users.builder()
-                    .userId(dto.getUserId())
-                    .userPassword(dto.getUserPassword())
-                    .userAuth(Auth.ROLE_USER)
-                    .userName(dto.getUserName())
-                    .nickname(Optional.ofNullable(dto.getNickname()).orElse(dto.getUserName()))
-                    .contact(dto.getContact())
-                    .email(dto.getEmail())
-                    .build();
-    }
 }
