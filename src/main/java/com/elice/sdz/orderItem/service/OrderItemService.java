@@ -86,7 +86,6 @@ public class OrderItemService {
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();
             orderItemDetail.setQuantity(orderItemDetail.getQuantity() + quantity);
             orderItemDetailRepository.save(orderItemDetail);
-            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
         } else {
             // 동일한 물건이 없을 경우 새로 추가
             OrderItemDetail orderItemDetail = new OrderItemDetail();
@@ -94,8 +93,9 @@ public class OrderItemService {
             orderItemDetail.setProduct(addProduct);
             orderItemDetail.setQuantity(quantity);
             orderItemDetailRepository.save(orderItemDetail);
-            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
         }
+        orderItem.updateTimestamp();
+        orderItemRepository.save(orderItem);
     }
 
     // 장바구니 상품 삭제
@@ -119,7 +119,8 @@ public class OrderItemService {
                 orderItem.getOrderItemDetails().remove(orderItemDetail); // 리스트에서 제거
                 orderItemDetailRepository.delete(orderItemDetail); // DB에서 삭제
             }
-            orderItem.setUpdatedAt(orderItemDetail.getUpdatedAt());
+            orderItem.updateTimestamp();
+            orderItemRepository.save(orderItem);
         }
     }
 
@@ -130,8 +131,8 @@ public class OrderItemService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 //        orderItemRepository.delete(orderItem);
         orderItem.getOrderItemDetails().clear();
+        orderItem.updateTimestamp();
         orderItemRepository.save(orderItem);
-        orderItem.setUpdatedAt(LocalDateTime.now());
     }
 
     // 장바구니 생성 및 찾기
