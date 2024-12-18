@@ -9,7 +9,6 @@ import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         //TODO 로그인 기능 완성후 TEST용 로그 삭제하기
         log.info("Test - LoginFilter is being called"); //Test
 
-        String userName = obtainUsername(request);
+        String userId = obtainUsername(request);
         String password = obtainPassword(request);
 
         boolean rememberId = "true".equals(request.getParameter("rememberId"));
@@ -65,7 +64,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         loginDetails.put("rememberId", rememberId);
         loginDetails.put("rememberMe", rememberMe);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userName, password, null);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, password, null);
         authToken.setDetails(loginDetails);
 
         return authenticationManager.authenticate(authToken);
@@ -86,7 +85,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
                 .orElseThrow(() ->
                     new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (isUserLoginLocked(response, user)) {
+        if (isUserLoginLocked(user)) {
             return;
         }
 
@@ -101,7 +100,9 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
 
-        handleRememberIdCookie(response, authentication, userId);
+        handleCookie(response, authentication, userId, refresh);
+
+        log.info("Test - successfulAuthentication");
 
         chain.doFilter(request, response);
     }
@@ -113,7 +114,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         customAuthenticationFailureHandler.onAuthenticationFailure(request, response, failed);
     }
 
-    private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
+    private boolean isUserLoginLocked(Users user) {
         if (user.isLoginLock()) {
             log.info("회원 아이디가 잠금 상태입니다: {}", user.getUserId());
             throw new CustomException(ErrorCode.LOGIN_LOCKED);
@@ -133,25 +134,26 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
 
-    private void handleRememberIdCookie(HttpServletResponse response, Authentication authentication, String userId) {
+    private void handleCookie(HttpServletResponse response, Authentication authentication, String userId, String refresh) {
         @SuppressWarnings("unchecked")
         Map<String, Boolean> loginDetails = (Map<String, Boolean>) authentication.getDetails();
         Boolean rememberId = loginDetails.getOrDefault("rememberId", false);
+        Boolean rememberMe = loginDetails.getOrDefault("rememberMe", false);
 
-        Cookie rememberIdCookie;
         if (Boolean.TRUE.equals(rememberId)) {
             String encodedUserId = Base64.getEncoder().encodeToString(userId.getBytes(StandardCharsets.UTF_8));
-            rememberIdCookie = new Cookie("remember-id", encodedUserId);
-            rememberIdCookie.setMaxAge(REMEMBER_ID_EXPIRATION);
+            CookieUtils.createCookies(response, "remember-id", encodedUserId, REMEMBER_ID_EXPIRATION);
         } else {
-            rememberIdCookie = new Cookie("remember-id", null);
-            rememberIdCookie.setMaxAge(0);
+            CookieUtils.deleteCookie(response, "remember-id");
         }
-        rememberIdCookie.setPath("/");
-        response.addCookie(rememberIdCookie);
+
+        if (Boolean.TRUE.equals(rememberMe)) {
+            CookieUtils.createCookies(response, "remember-me", refresh, REMEMBER_ME_EXPIRATION);
+        }
 
         //TODO 완성후 TEST용 로그 삭제하기
         log.info("Test - Remember ID cookie processed: {}", rememberId);
+        log.info("Test - remember Me cookie processed: {}", rememberMe);
     }
 
     private void addRefreshToken(String username, String refresh) {

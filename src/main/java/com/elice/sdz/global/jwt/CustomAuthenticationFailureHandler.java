@@ -30,7 +30,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) {
-        String userId = request.getParameter("userId");
+        String userId = request.getParameter("username");
         log.info("Test - onAuthenticationFailure userId : {}", userId);
 
         // 로그인 실패 처리: 실패 횟수 증가 및 잠금 여부 처리
