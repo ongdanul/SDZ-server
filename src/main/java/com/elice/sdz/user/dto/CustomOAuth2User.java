@@ -17,7 +17,7 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public Map<String, Object> getAttributes() {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("userId", oauth2DTO.getUserId());
+        attributes.put("userId", oauth2DTO.getEmail());
         attributes.put("userName", oauth2DTO.getUserName());
         attributes.put("authorities", oauth2DTO.getAuthorities());
         return attributes;
@@ -31,7 +31,7 @@ public class CustomOAuth2User implements OAuth2User {
     }
 
     public String getUserId() {
-        return oauth2DTO.getUserId();
+        return oauth2DTO.getEmail();
     }
 
     @Override

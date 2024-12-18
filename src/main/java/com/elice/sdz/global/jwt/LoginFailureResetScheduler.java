@@ -18,7 +18,7 @@ public class LoginFailureResetScheduler {
     private final UserRepository userRepository;
     @Scheduled(cron = "0 0 0 * * ?")
     public void resetLoginAttempts() {
-        log.debug("Login failure count reset scheduler started");
+        log.debug("로그인 실패 횟수 초기화 스케줄러 시작");
 
         List<Users> users = userRepository.findByLastFailedLoginIsNotNull();
         long now = System.currentTimeMillis();
@@ -35,13 +35,13 @@ public class LoginFailureResetScheduler {
                     try {
                         userRepository.save(user);
                         //TODO 로그인 기능 완성후 삭제하기
-                        log.info("Test - 사용자 {} 실패 횟수 초기화 완료", user.getUserId());
+                        log.info("Test - 회원 {} 실패 횟수 초기화 완료", user.getEmail());
                     } catch (Exception e) {
-                        log.error("error occurred while resetting failure count for user", e);
+                        log.error("회원의 로그인 실패 횟수 초기화 중 오류 발생", e);
                     }
                 }
             }
         });
-        log.debug("Login failure count reset scheduler completed");
+        log.debug("로그인 실패 횟수 초기화 스케줄러 실행 완료");
     }
 }

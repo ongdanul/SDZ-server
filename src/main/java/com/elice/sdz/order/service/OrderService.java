@@ -44,7 +44,7 @@ public class OrderService {
         Users user = userRepository.findById(String.valueOf(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Order order = toEntity(orderDto);
-        order.setUserId(user);
+        order.setUser(user);
         Order savedOrder = orderRepository.save(order);
         return toDto(savedOrder);
     }
@@ -89,10 +89,9 @@ public class OrderService {
     private OrderDto toDto(Order order) {
         OrderDto dto = new OrderDto();
         dto.setOrderId(order.getOrderId());
-        dto.setUserId(order.getUserId());  // Users 엔티티의 ID를 설정
+        dto.setUserId(order.getUser());  // Users 엔티티의 ID를 설정
         dto.setOrderCount(order.getOrderCount());
         dto.setOrderAmount(order.getOrderAmount());
-        dto.setRegDate(order.getRegDate());
         dto.setRefundStatus(order.isRefundStatus());
         return dto;
     }

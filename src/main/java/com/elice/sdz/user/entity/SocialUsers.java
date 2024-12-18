@@ -1,5 +1,6 @@
 package com.elice.sdz.user.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "social_users")
-public class SocialUsers {
+public class SocialUsers extends BaseEntity {
 
     @Id
     @Column(name = "social_id")
@@ -18,8 +19,8 @@ public class SocialUsers {
     private Long socialId;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    @JoinColumn(name = "email", nullable = false)
+    private Users user;
 
     @Column(name = "social_provider", length = 50, nullable = false)
     private String socialProvider;

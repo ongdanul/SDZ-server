@@ -1,6 +1,7 @@
 package com.elice.sdz.product.entity;
 
 import com.elice.sdz.category.entity.Category;
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.inquiry.entity.Inquiry;
 import com.elice.sdz.product.dto.ProductResponseDTO;
@@ -19,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product")
-public class Product {
+public class Product extends BaseEntity {
 
     @Id
     @Column(name = "product_id")
@@ -28,11 +29,11 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    private Category categoryId;
+    private Category category;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    @JoinColumn(name = "email", nullable = false)
+    private Users user;
 
     @Column(name = "product_name", length = 50, nullable = false)
     private String productName;
@@ -46,15 +47,15 @@ public class Product {
     @Column(name = "product_content", length = 3000, nullable = false)
     private String productContent;
 
-    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Review> reviews  = new ArrayList<>();
 
-    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Inquiry> inquiries = new ArrayList<>();
 
@@ -62,8 +63,8 @@ public class Product {
         return ProductResponseDTO.builder()
                 .productId(productId)
                 .productName(productName)
-                .userName(userId.getUserName())  // 사용자 이름
-                .categoryName(categoryId.getCategoryName())
+                .userName(user.getUserName())  // 사용자 이름
+                .categoryName(category.getCategoryName())
                 .productCount(this.productCount)
                 .productAmount(this.productAmount)
                 .productContent(this.productContent)

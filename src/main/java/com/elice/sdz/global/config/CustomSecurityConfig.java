@@ -75,15 +75,13 @@ public class CustomSecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/account/**", "/api/user/sign-up", "/api/check/**", "/oauth2/**").permitAll()
-                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**").permitAll()
+                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated())
-                //로그인 설정
+                //로그인 테스트
                 .formLogin(form -> form
-                        .loginPage("/api/user/login")
                         .loginProcessingUrl("/api/user/loginProcess")
-                        .failureHandler(customAuthenticationFailureHandler)
                         .permitAll())
                 //LoginFilter 추가
                 .addFilterBefore(new JWTFilter(jwtUtil, reissueService), CustomLoginFilter.class)
@@ -93,12 +91,6 @@ public class CustomSecurityConfig {
                         UsernamePasswordAuthenticationFilter.class)
                 //LogoutFilter 추가
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class)
-                //자동 로그인 설정
-                .rememberMe(rememberMe -> rememberMe
-                        .key(REMEMBER_ME_KEY)
-                        .rememberMeParameter("rememberMe")
-                        .userDetailsService(customUserDetailsService)
-                        .tokenValiditySeconds(REMEMBER_ME_EXPIRATION))
                 //소셜 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig

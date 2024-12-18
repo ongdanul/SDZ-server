@@ -1,24 +1,18 @@
 package com.elice.sdz.global.jwt;
 
-import com.elice.sdz.global.exception.CustomOauth2Exception;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -28,23 +22,8 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     private final UserRepository userRepository;
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-                                        AuthenticationException exception) throws IOException, ServletException {
-        // OAuth2 인증 실패인 경우, 커스텀 오류 메시지를 포함한 HTML로 응답
-        if (exception instanceof CustomOauth2Exception) {
-            response.setContentType("text/html;charset=UTF-8");
-            String message = exception.getMessage();
-            response.getWriter().write(
-                    "<html><script>"
-                            + "alert('" + message + "');"
-                            + "window.location.href = '/user/login';"
-                            + "</script></html>"
-            );
-            return;
-        }
-
-        // 일반 로그인 실패 처리
+                                        AuthenticationException exception) {
         String userId = request.getParameter("username");
-
         log.info("Test - onAuthenticationFailure userId : {}", userId);
 
         // 로그인 실패 처리: 실패 횟수 증가 및 잠금 여부 처리
@@ -52,32 +31,21 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         // 이미 잠금된 계정인 경우
         if (isLocked) {
-            sendErrorResponse(response, HttpStatus.FORBIDDEN.value(), "LOGIN_LOCKED");
-            return;
+            throw new CustomException(ErrorCode.LOGIN_LOCKED);
         }
-        sendErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "LOGIN_FAILED");
-    }
-
-    private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> json = new HashMap<>();
-        json.put("message", message);
-
-        response.setStatus(statusCode);
-        response.setContentType("application/json");
-        response.getWriter().write(objectMapper.writeValueAsString(json));
+        throw new CustomException(ErrorCode.LOGIN_FAILED);
     }
 
     public boolean handleLoginFailure(String userId) {
         final int MAX_ATTEMPTS = 5;
 
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(userId)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                        new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 계정이 이미 잠금 상태인 경우
         if (user.isLoginLock()) {
-            log.error("Locked account: {} ", userId);
+            log.error("로그인 잠금된 아이디입니다.: {} ", userId);
             return true;
         }
 
@@ -108,8 +76,8 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         try {
             userRepository.save(user);
         } catch (Exception e) {
-            log.error("Error occurred while updating user login status: {}", user.getUserId(), e);
-            throw new RuntimeException("An error occurred while updating user status.");
+            log.error("로그인 가능 상태 여부 수정 중 오류가 발생하였습니다.: {}", user.getEmail(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 }

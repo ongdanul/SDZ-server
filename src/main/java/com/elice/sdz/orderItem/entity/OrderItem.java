@@ -31,8 +31,8 @@ public class OrderItem extends BaseEntity {
     private Long id; // 장바구니 고유 번호
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private Users userId;
+    @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)
+    private Users user;
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemDetail> orderItemDetails = new ArrayList<>(); // 장바구니 상품 세부 정보

@@ -49,9 +49,6 @@ dependencies {
 	// swagger ui
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
-	// Jackson
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-
 	// slf4j
 	implementation 'org.springframework.boot:spring-boot-starter-logging'
 

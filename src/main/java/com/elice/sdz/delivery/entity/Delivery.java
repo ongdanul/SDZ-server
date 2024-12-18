@@ -1,5 +1,6 @@
 package com.elice.sdz.delivery.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "delivery")
-public class Delivery {
+public class Delivery extends BaseEntity {
 
     @Id
     @Column(name = "delivery_id")
@@ -22,15 +23,11 @@ public class Delivery {
 
     @OneToOne
     @JoinColumn(name = "delivery_address_id", nullable = false)
-    private DeliveryAddress deliveryAddressId;
+    private DeliveryAddress deliveryAddress;
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
+    private Order order;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "delivery_status", nullable = false)

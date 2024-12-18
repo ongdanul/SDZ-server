@@ -12,7 +12,7 @@ import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,7 +43,7 @@ public class OrderItemService {
     // 장바구니 조회 (DTO 반환)
     @Transactional
     public OrderItemDTO getOrderItems(String userId) {
-        OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
+        OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
         return convertToDTO(orderItem);
@@ -101,7 +101,7 @@ public class OrderItemService {
     // 장바구니 상품 삭제
     @Transactional
     public void deleteOrderItem(String userId, Long productId, int quantity) {
-        OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
+        OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
         Product deldteProduct = findByProductId(productId);
 
@@ -127,7 +127,7 @@ public class OrderItemService {
     // 장바구니 전체 삭제
     @Transactional
     public void clearOrderItems(String userId) {
-        OrderItem orderItem = orderItemRepository.findByUserId(findUserById(userId))
+        OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 //        orderItemRepository.delete(orderItem);
         orderItem.getOrderItemDetails().clear();
@@ -137,10 +137,10 @@ public class OrderItemService {
 
     // 장바구니 생성 및 찾기
     private OrderItem findOrCreateOrderItem(String userId) {
-        Optional<OrderItem> optionalOrderItem = orderItemRepository.findByUserId(findUserById(userId));
+        Optional<OrderItem> optionalOrderItem = orderItemRepository.findByUser(findUserById(userId));
         if (optionalOrderItem.isEmpty()) {
             OrderItem orderItem = new OrderItem();
-            orderItem.setUserId(findUserById(userId));
+            orderItem.setUser(findUserById(userId));
             return orderItemRepository.save(orderItem);
         } else {
             return optionalOrderItem.get();

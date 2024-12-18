@@ -9,7 +9,7 @@ import lombok.Setter;
 @Builder
 public class Oauth2DTO {
 
-    private String userId;
+    private String email;
 
     private String userName;
 
