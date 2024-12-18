@@ -15,13 +15,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryService {
 
+    private final long CAPACITY = 5;
     private final CategoryRepository categoryRepository;
 
     public CategoryResponseDTO createCategory(CategoryRequestDTO categoryRequestDTO) {
+        long categoryCount = categoryRepository.count();
         Category newCategory = categoryRequestDTO.toEntity();
 
         if (categoryRepository.findByCategoryName(newCategory.getCategoryName()).isPresent()) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        }
+
+        if (categoryCount >= CAPACITY) {
+            throw new CustomException(ErrorCode.CATEGORY_CAPACITY_EXCEEDED);
         }
 
         return categoryRepository.save(newCategory).toResponseDTO();
@@ -52,8 +58,12 @@ public class CategoryService {
     }
 
     public void deleteCategory(Long categoryId) {
-        categoryRepository.findById(categoryId)
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if (!category.getProducts().isEmpty()) {
+            throw new CustomException(ErrorCode.CATEGORY_WITH_PRODUCTS);
+        }
 
         categoryRepository.deleteById(categoryId);
     }

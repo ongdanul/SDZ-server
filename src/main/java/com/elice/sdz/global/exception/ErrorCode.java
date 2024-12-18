@@ -27,6 +27,8 @@ public enum ErrorCode {
     // 카테고리 관련 에러
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_NOT_FOUND", "카테고리가 존재하지 않습니다."),
     CATEGORY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CATEGORY_ALREADY_EXISTS", "카테고리 이름이 이미 존재합니다."),
+    CATEGORY_CAPACITY_EXCEEDED(HttpStatus.BAD_REQUEST,"CATEGORY_CAPACITY_EXCEEDED", "카테고리는 최대 5개 생성할 수 있습니다."),
+    CATEGORY_WITH_PRODUCTS(HttpStatus.BAD_REQUEST, "CATEGORY_WITH_PRODUCTS", "상품이 있는 카테고리는 삭제할 수 없습니다."),
 
     // 서버 관련 에러
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예기치 않은 오류가 발생했습니다."),
