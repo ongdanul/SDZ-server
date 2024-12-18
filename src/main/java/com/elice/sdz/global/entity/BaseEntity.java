@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@Getter @Setter
+@Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
@@ -21,4 +21,9 @@ public class BaseEntity {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt; // 수정 시간
+
+    // updatedAt 갱신 메서드
+    public void updateTimestamp() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

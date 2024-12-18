@@ -11,7 +11,7 @@ import lombok.Data;
 public class CategoryRequestDTO {
 
     @NotNull
-    @Size(min = 1, max = 30)
+    @Size(min = 1, max = 10)
     private String categoryName;
 
     public Category toEntity() {
