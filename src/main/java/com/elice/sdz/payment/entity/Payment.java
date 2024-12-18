@@ -1,5 +1,6 @@
 package com.elice.sdz.payment.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "payment")
-public class Payment {
+public class Payment extends BaseEntity {
 
     @Id
     @Column(name = "payment_id")
@@ -22,17 +23,13 @@ public class Payment {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
+    private Order order;
 
     @Column(name = "payment_amount", nullable = false)
     private Double paymentAmount;
 
     @Column(name = "payment_method", length = 50, nullable = false)
     private String paymentMethod;
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)

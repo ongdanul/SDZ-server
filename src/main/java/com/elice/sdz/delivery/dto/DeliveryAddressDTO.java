@@ -39,7 +39,7 @@ public class DeliveryAddressDTO {
 
     public DeliveryAddress toEntity (Users user) {
         return DeliveryAddress.builder()
-                .userId(user)
+                .user(user)
                 .deliveryAddress1(deliveryAddress1)
                 .deliveryAddress2(deliveryAddress2)
                 .deliveryAddress3(deliveryAddress3)
@@ -51,7 +51,7 @@ public class DeliveryAddressDTO {
     }
 
     public void updateEntity(DeliveryAddress deliveryAddress, Users user) {
-        deliveryAddress.setUserId(user);
+        deliveryAddress.setUser(user);
         deliveryAddress.setDeliveryAddress1(deliveryAddress1);
         deliveryAddress.setDeliveryAddress2(deliveryAddress2);
         deliveryAddress.setDeliveryAddress3(deliveryAddress3);

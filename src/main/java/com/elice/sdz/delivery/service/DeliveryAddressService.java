@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,11 +50,11 @@ public class DeliveryAddressService {
     private Page<DeliveryAddress> findAddressesByUserId(String userId, Pageable pageable) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
-        return deliveryAddressRepository.findAllByUserId(user, pageable);
+        return deliveryAddressRepository.findAllByUser(user, pageable);
     }
 
     public void createNewAddress (DeliveryAddressDTO deliveryAddressDTO) {
-        Users user = userRepository.findByUserId(deliveryAddressDTO.getUserId())
+        Users user = userRepository.findByEmail(deliveryAddressDTO.getUserId())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
@@ -70,13 +69,13 @@ public class DeliveryAddressService {
 
     @Transactional
     public void updateAddress(Long deliveryAddressId, DeliveryAddressDTO deliveryAddressDTO) {
-        Users user = userRepository.findByUserId(deliveryAddressDTO.getUserId())
+        Users user = userRepository.findByEmail(deliveryAddressDTO.getUserId())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
-        if (!deliveryAddress.getUserId().getUserId().equals(user.getUserId())) {
+        if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
             throw new AccessDeniedException("이 주소를 수정할 권한이 없습니다.");
         }
 
@@ -95,7 +94,7 @@ public class DeliveryAddressService {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
-        if(!deliveryAddress.getUserId().getUserId().equals(userId)) {
+        if(!deliveryAddress.getUser().getEmail().equals(userId)) {
             throw new AccessDeniedException("삭제할 권한이 없습니다.");
         }
         deliveryAddressRepository.delete(deliveryAddress);

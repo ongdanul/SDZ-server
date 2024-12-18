@@ -1,5 +1,6 @@
 package com.elice.sdz.inquiry.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.user.entity.Users;
@@ -17,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "inquiry")
-public class Inquiry {
+public class Inquiry extends BaseEntity {
 
     @Id
     @Column(name = "inquiry_id")
@@ -26,11 +27,11 @@ public class Inquiry {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private Product productId;
+    private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    @JoinColumn(name = "email", nullable = false)
+    private Users user;
 
     @Column(name = "inquiry_type", length = 20, nullable = false)
     private String inquiryType;
@@ -40,10 +41,6 @@ public class Inquiry {
 
     @Column(name = "inquiry_content", length = 500, nullable = false)
     private String inquiryContent;
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
 
     @Column(name = "answer_content", length = 500)
     private String answerContent;
@@ -60,7 +57,7 @@ public class Inquiry {
     @Column(name = "inquiry_status", nullable = false)
     private Status inquiryStatus;
 
-    @OneToMany(mappedBy = "inquiryId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "inquiry", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Image> images = new ArrayList<>();
 

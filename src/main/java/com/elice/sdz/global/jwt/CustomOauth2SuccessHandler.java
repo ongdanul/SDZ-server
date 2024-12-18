@@ -34,17 +34,17 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         CustomOAuth2User customOAuth2User = (CustomOAuth2User)authentication.getPrincipal();
-        String userId = customOAuth2User.getUserId();
+        String email = customOAuth2User.getUserId();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
-        String access = jwtUtil.createJwt("access", userId, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", userId, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
 
-        addRefreshToken(userId, refresh);
+        addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
@@ -53,10 +53,10 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         log.info("Test - Oauth login success");
     }
 
-    private void addRefreshToken(String userId, String refresh) {
+    private void addRefreshToken(String email, String refresh) {
         Date date = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
         RefreshToken refreshToken = RefreshToken.builder()
-                .userId(userId)
+                .email(email)
                 .refresh(refresh)
                 .expiration(date.toString())
                 .build();

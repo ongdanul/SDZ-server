@@ -30,13 +30,13 @@ public class AccountService {
     public List<UserIdsDTO> findByUserId(String userName, String contact) {
         return userRepository.findByUserNameAndContactAndSocialFalse(userName, contact)
                 .stream()
-                .map(user -> new UserIdsDTO(user.getUserId()))
+                .map(user -> new UserIdsDTO(user.getEmail()))
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public void createTemporaryPassword(String userId, String userName) {
-        Users user = userRepository.findByUserIdAndUserName(userId, userName)
+        Users user = userRepository.findByEmailAndUserName(userId, userName)
                 .orElseThrow(() ->new CustomException(ErrorCode.USER_NOT_FOUND));
 
         String newPassword = createNewPassword();

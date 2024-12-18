@@ -4,22 +4,15 @@ import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -46,7 +39,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     public boolean handleLoginFailure(String userId) {
         final int MAX_ATTEMPTS = 5;
 
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(userId)
                 .orElseThrow(() ->
                         new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -83,7 +76,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         try {
             userRepository.save(user);
         } catch (Exception e) {
-            log.error("로그인 가능 상태 여부 수정 중 오류가 발생하였습니다.: {}", user.getUserId(), e);
+            log.error("로그인 가능 상태 여부 수정 중 오류가 발생하였습니다.: {}", user.getEmail(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }

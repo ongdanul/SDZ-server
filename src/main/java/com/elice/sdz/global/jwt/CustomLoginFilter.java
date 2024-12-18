@@ -73,7 +73,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authentication) throws IOException, ServletException {
-        String userId = authentication.getName();
+        String email = authentication.getName();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.stream()
@@ -81,7 +81,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                     new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -91,16 +91,16 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         resetLoginAttempts(user);
 
-        String access = jwtUtil.createJwt("access", userId, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", userId, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
 
-        addRefreshToken(userId, refresh);
+        addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
 
-        handleCookie(response, authentication, userId, refresh);
+        handleCookie(response, authentication, email, refresh);
 
         log.info("Test - successfulAuthentication");
 
@@ -116,7 +116,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private boolean isUserLoginLocked(Users user) {
         if (user.isLoginLock()) {
-            log.info("회원 아이디가 잠금 상태입니다: {}", user.getUserId());
+            log.info("회원 아이디가 잠금 상태입니다: {}", user.getEmail());
             throw new CustomException(ErrorCode.LOGIN_LOCKED);
         }
         return false;
@@ -129,7 +129,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             try {
                 userRepository.save(user);
             } catch (Exception e) {
-                log.error("회원 로그인 시도 횟수 초기화 중 오류 발생: {}", user.getUserId(), e);
+                log.error("회원 로그인 시도 횟수 초기화 중 오류 발생: {}", user.getEmail(), e);
             }
         }
     }
@@ -156,10 +156,10 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         log.info("Test - remember Me cookie processed: {}", rememberMe);
     }
 
-    private void addRefreshToken(String username, String refresh) {
+    private void addRefreshToken(String email, String refresh) {
         Date date = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
         RefreshToken refreshToken = RefreshToken.builder()
-                .userId(username)
+                .email(email)
                 .refresh(refresh)
                 .expiration(date.toString())
                 .build();

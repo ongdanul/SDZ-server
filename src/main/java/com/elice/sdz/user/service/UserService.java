@@ -43,7 +43,7 @@
 
             try {
                 userRepository.save(user);
-                log.info("회원가입에 성공하였습니다.: {}", user.getUserId());
+                log.info("회원가입에 성공하였습니다.: {}", user.getEmail());
                 return true;
             } catch (Exception e) {
                 log.error("회원가입 처리 중 오류가 발생하였습니다.: {}", e.getMessage(), e);
@@ -61,7 +61,7 @@
         }
 
         public UserDetailDTO findByUserId(String userId) {
-            Users user = userRepository.findByUserId(userId)
+            Users user = userRepository.findByEmail(userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             return UserDetailDTO.toDTO(user);
@@ -69,7 +69,7 @@
 
         @Transactional
         public void updateLocalUser(UpdateLocalDTO updateLocalDTO) {
-            Users user = userRepository.findByUserId(updateLocalDTO.getUserId())
+            Users user = userRepository.findByEmail(updateLocalDTO.getUserId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             String userPassword = updateLocalDTO.getUserPassword();
@@ -82,7 +82,7 @@
 
         @Transactional
         public void updateSocialUser(UpdateSocialDTO updateSocialDTO) {
-            Users user = userRepository.findByUserId(updateSocialDTO.getUserId())
+            Users user = userRepository.findByEmail(updateSocialDTO.getUserId())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             updateSocialDTO.updateEntity(user);
@@ -105,12 +105,12 @@
 
         @Transactional
         public void deleteUser(HttpServletResponse response, String userId) {
-            Users user = userRepository.findByUserId(userId)
+            Users user = userRepository.findByEmail(userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             userRepository.delete(user);
             try {
-                refreshRepository.deleteAllByUserId(userId);
+                refreshRepository.deleteAllByEmail(userId);
             } catch (Exception e) {
                 log.error("회원ID {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", userId, e);
                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);

@@ -1,6 +1,7 @@
 package com.elice.sdz.user.entity;
 
 import com.elice.sdz.delivery.entity.DeliveryAddress;
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.review.entity.Review;
@@ -22,11 +23,11 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user")
-public class Users {
+public class Users extends BaseEntity {
 
     @Id
-    @Column(name = "user_id", length = 50)
-    private String userId;
+    @Column(name = "email", length = 50)
+    private String email;
 
     @Column(name = "user_password")
     private String userPassword;
@@ -43,13 +44,6 @@ public class Users {
 
     @Column(name = "contact", length = 20)
     private String contact;
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
-
-    @Column(name = "email", length = 50, nullable = false)
-    private String email;
 
     @Column(name = "login_lock", nullable = false,
             columnDefinition = "BIT(1) DEFAULT 0")
@@ -70,31 +64,24 @@ public class Users {
     @Column(name = "profile_url")
     private String profileUrl;
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Product> products = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Order> orders  = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Review> reviews = new ArrayList<>();
 
     public enum Auth {
         ROLE_USER,
         ROLE_ADMIN;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (regDate == null) {
-            regDate = Instant.now();
-            }
     }
 }

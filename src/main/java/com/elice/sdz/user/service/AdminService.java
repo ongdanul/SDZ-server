@@ -67,22 +67,22 @@ public class AdminService {
 
     private Page<Users> getUserListByKeywordAndType(String keyword, String type, Pageable pageable) {
         if ("all".equals(type)) {
-            return userRepository.findByUserIdContaining(keyword, pageable);
+            return userRepository.findByEmailContaining(keyword, pageable);
         }
 
         if ("local".equals(type)) {
-            return userRepository.findByUserIdContainingAndSocialFalse(keyword, pageable);
+            return userRepository.findByEmailContainingAndSocialFalse(keyword, pageable);
         }
 
         if ("social".equals(type)) {
-            return userRepository.findByUserIdContainingAndSocialTrue(keyword, pageable);
+            return userRepository.findByEmailContainingAndSocialTrue(keyword, pageable);
         }
         throw new CustomException(ErrorCode.INVALID_TYPE);
     }
 
     @Transactional
     public void updateLoginLock(String userId){
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.setLoginLock(!user.isLoginLock());
@@ -91,7 +91,7 @@ public class AdminService {
 
     @Transactional
     public void updateAuth(String userId){
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.setUserAuth(user.getUserAuth() == Users.Auth.ROLE_USER
@@ -102,7 +102,7 @@ public class AdminService {
 
     @Transactional
     public void adminDeleteUser(String userId) {
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
@@ -119,6 +119,6 @@ public class AdminService {
             throw new CustomException(ErrorCode.USER_IDS_NOT_EXIST);
         }
 
-        userRepository.deleteAllByUserIdIn(userIds);
+        userRepository.deleteAllByEmailIn(userIds);
     }
 }

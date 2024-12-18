@@ -35,14 +35,14 @@ public class ReissueService {
             return false;
         }
 
-        String username = jwtUtil.getUsername(refresh);
+        String email = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
 
-        String newAccessToken = jwtUtil.createJwt("access", username, role, ACCESS_TOKEN_EXPIRATION);
-        String newRefreshToken = jwtUtil.createJwt("refresh", username, role, REFRESH_TOKEN_EXPIRATION);
+        String newAccessToken = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
+        String newRefreshToken = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
 
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshToken(username, newRefreshToken);
+        addRefreshToken(email, newRefreshToken);
 
         CookieUtils.deleteCookies(request, response);
 
@@ -76,10 +76,10 @@ public class ReissueService {
         return true;
     }
 
-    private void addRefreshToken(String username, String refresh) {
+    private void addRefreshToken(String email, String refresh) {
         Date date = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
         RefreshToken refreshToken = RefreshToken.builder()
-                .userId(username)
+                .email(email)
                 .refresh(refresh)
                 .expiration(date.toString())
                 .build();

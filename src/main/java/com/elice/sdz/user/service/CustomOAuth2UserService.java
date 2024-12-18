@@ -55,7 +55,7 @@
             String providerId = oAuth2UserInfo.getId();
             String userId = provider + "_" + providerId;
 
-            return userRepository.findByUserId(userId)
+            return userRepository.findByEmail(userId)
                     .map(user -> {
                         if (!user.isSocial()) {
                             log.warn("이미 일반 회원으로 등록된 ID입니다.");
@@ -66,7 +66,7 @@
                     .orElseGet(() -> {
                         socialRepository.findBySocialProviderAndSocialProviderId(provider, providerId)
                                 .ifPresent(socialUser -> {
-                                    log.warn("이미 가입된 소셜 회원입니다.: {}", socialUser.getUserId());
+                                    log.warn("이미 가입된 소셜 회원입니다.: {}", socialUser.getUser());
                                     throw new CustomException(ErrorCode.SOCIAL_USER_EXISTS);
                                 });
                         return registerNewUser(oAuth2UserInfo);
@@ -75,7 +75,7 @@
 
         private OAuth2User loadExistingSocialUser(Users user, OAuth2UserInfo oAuth2UserInfo) {
             Oauth2DTO oauth2DTO = Oauth2DTO.builder()
-                    .userId(user.getUserId())
+                    .email(user.getEmail())
                     .userName(oAuth2UserInfo.getName())
                     .authorities(user.getUserAuth().name())
                     .build();
@@ -86,7 +86,7 @@
         private OAuth2User registerNewUser(OAuth2UserInfo oAuth2UserInfo) {
 
             Users user = Users.builder()
-                    .userId(oAuth2UserInfo.getProvider() + "_" + oAuth2UserInfo.getId())
+                    .email(oAuth2UserInfo.getProvider() + "_" + oAuth2UserInfo.getId())
                     .userPassword(null)
                     .userAuth(Users.Auth.ROLE_USER)
                     .userName(oAuth2UserInfo.getName())
@@ -98,13 +98,13 @@
             userRepository.save(user);
 
             SocialUsers socialUser = new SocialUsers();
-            socialUser.setUserId(user);
+            socialUser.setUser(user);
             socialUser.setSocialProvider(oAuth2UserInfo.getProvider());
             socialUser.setSocialProviderId(oAuth2UserInfo.getId());
             socialRepository.save(socialUser);
 
             Oauth2DTO oauth2DTO = Oauth2DTO.builder()
-                    .userId(user.getUserId())
+                    .email(user.getEmail())
                     .userName(user.getUserName())
                     .authorities(user.getUserAuth().name())
                     .build();

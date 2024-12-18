@@ -12,7 +12,7 @@ import lombok.Data;
 @Builder
 public class UserDetailDTO {
 
-    private String userId;
+    private String email;
 
     private String userPassword;
 
@@ -22,20 +22,17 @@ public class UserDetailDTO {
 
     private String contact;
 
-    private String email;
-
     private boolean social;
 
     private String profileUrl;
 
     public static UserDetailDTO toDTO(Users user) {
         return UserDetailDTO.builder()
-                .userId(user.getUserId())
+                .email(user.getEmail())
                 .userPassword(user.getUserPassword())
                 .userName(user.getUserName())
                 .nickname(user.getNickname())
                 .contact(user.getContact())
-                .email(user.getEmail())
                 .social(user.isSocial())
                 .profileUrl(user.getProfileUrl())
                 .build();

@@ -35,7 +35,7 @@ public class LoginFailureResetScheduler {
                     try {
                         userRepository.save(user);
                         //TODO 로그인 기능 완성후 삭제하기
-                        log.info("Test - 회원 {} 실패 횟수 초기화 완료", user.getUserId());
+                        log.info("Test - 회원 {} 실패 횟수 초기화 완료", user.getEmail());
                     } catch (Exception e) {
                         log.error("회원의 로그인 실패 횟수 초기화 중 오류 발생", e);
                     }
