@@ -1,6 +1,7 @@
 package com.elice.sdz.order.entity;
 
 import ch.qos.logback.core.status.Status;
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product_order")
-public class Order {
+public class Order extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
