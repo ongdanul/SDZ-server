@@ -25,63 +25,72 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public Product createProduct(ProductDTO productDTO) {
+    // Product 생성
+    public ProductResponseDTO createProduct(ProductDTO productDTO) {
+        // Category와 User를 ID로 받아와 조회
         Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        Users user = userRepository.findById(productDTO.getUserId())
+        Users user = userRepository.findById("admin123")
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Product 객체 생성
         Product product = new Product(
                 null,  // productId는 null로 설정 (자동 생성)
-                category,  // categoryId를 Category 객체로 설정
-                user,  // userId를 Users 객체로 설정
+                category,
+                user,
                 productDTO.getProductName(),
                 productDTO.getProductCount(),
                 productDTO.getProductAmount(),
                 productDTO.getProductContent()
         );
 
-        // Product 저장
-        return productRepository.save(product);
+        return productRepository.save(product).toResponseDTO();
     }
 
-
-    public Product getProduct(Long productId) {
-        return productRepository.findById(productId)
+    // Product 조회
+    public ProductResponseDTO getProduct(Long productId) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        return product.toResponseDTO();
     }
 
+    // 모든 Product 조회
     public List<ProductResponseDTO> getAllProducts() {
         List<Product> products = productRepository.findAll();
 
-        return products.stream().map(product -> {
-            ProductResponseDTO dto = new ProductResponseDTO();
-            dto.setProductId(product.getProductId());
-            dto.setProductName(product.getProductName());
-            dto.setUserName(product.getUserId().getUserName());
-            dto.setCategoryName(product.getCategoryId().getCategoryName());
-            return dto;
-        }).collect(Collectors.toList());
+        return products.stream()
+                .map(Product::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
+    // Product 수정
+    public ProductResponseDTO updateProduct(Long productId, ProductDTO productDTO) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-    public Product updateProduct(Long productId, ProductDTO productDTO) {
-        Product product = getProduct(productId);
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
+        Users user = userRepository.findById(productDTO.getUserId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        product.setCategoryId(category);
+        product.setUserId(user);
         product.setProductName(productDTO.getProductName());
         product.setProductCount(productDTO.getProductCount());
         product.setProductAmount(productDTO.getProductAmount());
         product.setProductContent(productDTO.getProductContent());
 
-        return productRepository.save(product);
+        return productRepository.save(product).toResponseDTO();
     }
 
+    // Product 삭제
     public void deleteProduct(Long productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
-        }
-        productRepository.deleteById(productId);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        productRepository.delete(product);
     }
 }
