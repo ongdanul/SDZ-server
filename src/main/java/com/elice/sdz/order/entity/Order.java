@@ -22,18 +22,14 @@ public class Order extends BaseEntity {
     private Long orderId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id") // 외래 키 컬럼을 지정
-    private Users userId; // Users 엔티티와의 관계
+    @JoinColumn(name = "email") // 외래 키 컬럼을 지정
+    private Users user; // Users 엔티티와의 관계
 
     @Column(name = "order_count", nullable = false)
     private int orderCount; //수량
 
     @Column(name = "order_amount", nullable = false)
     private Double orderAmount; //가격
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate; //주문일
 
     @Column(name = "refund_status", nullable = false,
             columnDefinition = "BIT(1) DEFAULT 0")

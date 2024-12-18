@@ -1,14 +1,14 @@
 package com.elice.sdz.global.jwt;
 
 import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
@@ -50,7 +49,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         //TODO 로그인 기능 완성후 TEST용 로그 삭제하기
         log.info("Test - LoginFilter is being called"); //Test
 
-        String userName = obtainUsername(request);
+        String userId = obtainUsername(request);
         String password = obtainPassword(request);
 
         boolean rememberId = "true".equals(request.getParameter("rememberId"));
@@ -65,7 +64,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         loginDetails.put("rememberId", rememberId);
         loginDetails.put("rememberMe", rememberMe);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userName, password, null);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, password, null);
         authToken.setDetails(loginDetails);
 
         return authenticationManager.authenticate(authToken);
@@ -74,34 +73,36 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authentication) throws IOException, ServletException {
-        String userId = authentication.getName();
+        String email = authentication.getName();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .orElseThrow(() -> new IllegalStateException("Authorization is missing."));
+                .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
-        Users user = userRepository.findByUserId(userId)
+        Users user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                    new UsernameNotFoundException("User not found"));
+                    new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (isUserLoginLocked(response, user)) {
+        if (isUserLoginLocked(user)) {
             return;
         }
 
         resetLoginAttempts(user);
 
-        String access = jwtUtil.createJwt("access", userId, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", userId, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
 
-        addRefreshToken(userId, refresh);
+        addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
 
-        handleRememberIdCookie(response, authentication, userId);
+        handleCookie(response, authentication, email, refresh);
+
+        log.info("Test - successfulAuthentication");
 
         chain.doFilter(request, response);
     }
@@ -113,17 +114,10 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         customAuthenticationFailureHandler.onAuthenticationFailure(request, response, failed);
     }
 
-    private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
+    private boolean isUserLoginLocked(Users user) {
         if (user.isLoginLock()) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> json = new HashMap<>();
-            json.put("message", "LOGIN_LOCKED");
-
-            response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.setContentType("application/json");
-            response.getWriter().write(objectMapper.writeValueAsString(json));
-            log.info("User account is locked: {}", user.getUserId());
-            return true;
+            log.info("회원 아이디가 잠금 상태입니다: {}", user.getEmail());
+            throw new CustomException(ErrorCode.LOGIN_LOCKED);
         }
         return false;
     }
@@ -135,36 +129,37 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             try {
                 userRepository.save(user);
             } catch (Exception e) {
-                log.error("Error occurred while resetting login attempts for user: {}", user.getUserId(), e);
+                log.error("회원 로그인 시도 횟수 초기화 중 오류 발생: {}", user.getEmail(), e);
             }
         }
     }
 
-    private void handleRememberIdCookie(HttpServletResponse response, Authentication authentication, String userId) {
+    private void handleCookie(HttpServletResponse response, Authentication authentication, String userId, String refresh) {
         @SuppressWarnings("unchecked")
         Map<String, Boolean> loginDetails = (Map<String, Boolean>) authentication.getDetails();
         Boolean rememberId = loginDetails.getOrDefault("rememberId", false);
+        Boolean rememberMe = loginDetails.getOrDefault("rememberMe", false);
 
-        Cookie rememberIdCookie;
         if (Boolean.TRUE.equals(rememberId)) {
             String encodedUserId = Base64.getEncoder().encodeToString(userId.getBytes(StandardCharsets.UTF_8));
-            rememberIdCookie = new Cookie("remember-id", encodedUserId);
-            rememberIdCookie.setMaxAge(REMEMBER_ID_EXPIRATION);
+            CookieUtils.createCookies(response, "remember-id", encodedUserId, REMEMBER_ID_EXPIRATION);
         } else {
-            rememberIdCookie = new Cookie("remember-id", null);
-            rememberIdCookie.setMaxAge(0);
+            CookieUtils.deleteCookie(response, "remember-id");
         }
-        rememberIdCookie.setPath("/");
-        response.addCookie(rememberIdCookie);
+
+        if (Boolean.TRUE.equals(rememberMe)) {
+            CookieUtils.createCookies(response, "remember-me", refresh, REMEMBER_ME_EXPIRATION);
+        }
 
         //TODO 완성후 TEST용 로그 삭제하기
         log.info("Test - Remember ID cookie processed: {}", rememberId);
+        log.info("Test - remember Me cookie processed: {}", rememberMe);
     }
 
-    private void addRefreshToken(String username, String refresh) {
+    private void addRefreshToken(String email, String refresh) {
         Date date = new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION);
         RefreshToken refreshToken = RefreshToken.builder()
-                .userId(username)
+                .email(email)
                 .refresh(refresh)
                 .expiration(date.toString())
                 .build();

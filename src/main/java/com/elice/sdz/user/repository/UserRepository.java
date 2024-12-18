@@ -12,24 +12,26 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<Users, String> {
 
-    Optional<Users> findByUserId(String userId);
+    Optional<Users> findByEmail(String email);
     long countByUserNameAndContact(String userName, String contact);
 
     //Account
     List<Users> findByLastFailedLoginIsNotNull();
     List<Users> findByUserNameAndContactAndSocialFalse(String userName, String contact);
-    Optional<Users> findByUserIdAndUserName(String userId, String userName);
+    Optional<Users> findByEmailAndUserName(String email, String userName);
 
     //Verification
-    @Query("SELECT u.userPassword FROM Users u WHERE u.userId = :userId")
-    String findPasswordByUserId(@Param("userId") String userId);
-    boolean existsByUserId(String userId);
+    @Query("SELECT u.userPassword FROM Users u WHERE u.email = :email")
+    String findPasswordByEmail(@Param("email") String email);
+    boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
-    boolean existsByUserIdAndUserName(String userId, String userName);
+    boolean existsByEmailAndUserName(String email, String userName);
 
     //Admin
-    Page<Users> findByUserIdContainingAndSocialTrue(String userId, Pageable pageable);
-    Page<Users> findByUserIdContainingAndSocialFalse(String userId, Pageable pageable);
-
-    String findEmailByUserId(String userId);
+    Page<Users> findBySocialTrue(Pageable pageable);
+    Page<Users> findBySocialFalse(Pageable pageable);
+    Page<Users> findByEmailContaining(String email, Pageable pageable);
+    Page<Users> findByEmailContainingAndSocialTrue(String email, Pageable pageable);
+    Page<Users> findByEmailContainingAndSocialFalse(String email, Pageable pageable);
+    void deleteAllByEmailIn(List<String> emails);
 }

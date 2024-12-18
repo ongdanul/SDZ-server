@@ -76,8 +76,8 @@ public class ProductService {
         Users user = userRepository.findById(productDTO.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        product.setCategoryId(category);
-        product.setUserId(user);
+        product.setCategory(category);
+        product.setUser(user);
         product.setProductName(productDTO.getProductName());
         product.setProductCount(productDTO.getProductCount());
         product.setProductAmount(productDTO.getProductAmount());

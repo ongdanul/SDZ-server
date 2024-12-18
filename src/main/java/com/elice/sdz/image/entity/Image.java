@@ -1,5 +1,6 @@
 package com.elice.sdz.image.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.inquiry.entity.Inquiry;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.review.entity.Review;
@@ -15,7 +16,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "image")
-public class Image {
+public class Image extends BaseEntity {
 
     @Id
     @Column(name = "image_id")
@@ -24,15 +25,15 @@ public class Image {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private Product productId;
+    private Product product;
 
     @ManyToOne
     @JoinColumn(name = "review_id")
-    private Review reviewId;
+    private Review review;
 
     @ManyToOne
     @JoinColumn(name = "inquiry_id")
-    private Inquiry inquiryId;
+    private Inquiry inquiry;
 
     @Column(name = "image_origin", nullable = false)
     private String imageOrigin;
@@ -45,9 +46,4 @@ public class Image {
 
     @Column(name = "thumbnail_path")
     private String thumbnailPath;
-
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
-
 }

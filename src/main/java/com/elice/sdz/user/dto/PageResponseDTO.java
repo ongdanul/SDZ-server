@@ -1,8 +1,12 @@
 package com.elice.sdz.user.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+
 import java.util.Collections;
 import java.util.List;
 
+@Getter
 public class PageResponseDTO<E> {
 
     private int page;
@@ -19,6 +23,7 @@ public class PageResponseDTO<E> {
 
     private String keyword;
 
+    @Builder(builderMethodName = "withAll")
     public PageResponseDTO(PageRequestDTO pageRequestDTO, List<E> dtoList, int total, String keyword) {
 
         this.page = pageRequestDTO.getPage();
@@ -42,9 +47,5 @@ public class PageResponseDTO<E> {
             this.start = 1;
             this.end = 1;
         }
-    }
-
-    public static <E> PageResponseDTO<E> from(PageRequestDTO pageRequestDTO, List<E> dtoList, int total, String keyword) {
-        return new PageResponseDTO<>(pageRequestDTO, dtoList, total, keyword);
     }
 }

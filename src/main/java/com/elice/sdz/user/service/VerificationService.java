@@ -16,7 +16,7 @@ public class VerificationService {
 
 
     public Boolean isUserIdExists(String userId) {
-        return userRepository.existsByUserId(userId);
+        return userRepository.existsByEmail(userId);
     }
     public Boolean isNicknameExists(String nickname) {
 
@@ -24,11 +24,11 @@ public class VerificationService {
     }
 
     public boolean existsByUserIdAndUserName(String userId, String userName) {
-        return userRepository.existsByUserIdAndUserName(userId, userName);
+        return userRepository.existsByEmailAndUserName(userId, userName);
     }
 
     public boolean checkPassword(String userId, String inputPassword) {
-        String storedPassword = userRepository.findPasswordByUserId(userId);
+        String storedPassword = userRepository.findPasswordByEmail(userId);
         return bCryptPasswordEncoder.matches(inputPassword, storedPassword);
     }
 }

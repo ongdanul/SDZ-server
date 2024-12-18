@@ -1,9 +1,10 @@
 package com.elice.sdz.global.jwt;
 
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomUserDetails;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.service.ReissueService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,8 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,56 +41,28 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         try {
-            if (jwtUtil.isExpired(accessToken)) {
-                handleExpiredToken(request, response);
-                return;
-            }
+            jwtUtil.isExpired(accessToken);
 
             if (!jwtUtil.isValidCategory(accessToken, "access")) {
-                handleInvalidToken(response, "Invalid access token");
-                return;
+                throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
             }
 
             Users user = new Users();
-            user.setUserId(jwtUtil.getUsername(accessToken));
+            user.setEmail(jwtUtil.getUsername(accessToken));
             user.setUserAuth(Users.Auth.valueOf(jwtUtil.getRole(accessToken)));
 
             CustomUserDetails customUserDetails = new CustomUserDetails(user);
             Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
+
         } catch (ExpiredJwtException e) {
-            log.warn("Expired access token: {}", accessToken);
-            handleExpiredToken(request, response);
-            return;
+            log.warn("만료된 엑세스 토큰입니다.: {}", accessToken);
+            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         } catch (Exception e) {
-            log.error("Unexpected error during JWT validation", e);
-            handleInvalidToken(response, "Token validation error");
-            return;
+            log.error("JWT 토큰 검증 중 오류가 발생하였습니다.:", e);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private void handleExpiredToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        boolean reissued = reissueService.reissue(request, response);
-        if (reissued) {
-            sendJsonResponse(response, HttpServletResponse.SC_OK, "Access token reissued successfully");
-        } else {
-            sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh token is invalid or expired");
-        }
-    }
-
-    private void handleInvalidToken(HttpServletResponse response, String errorMessage) throws IOException {
-        sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, errorMessage);
-    }
-
-    private void sendJsonResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> json = new HashMap<>();
-        json.put("message", message);
-
-        response.setStatus(statusCode);
-        response.setContentType("application/json");
-        response.getWriter().write(objectMapper.writeValueAsString(json));
     }
 }

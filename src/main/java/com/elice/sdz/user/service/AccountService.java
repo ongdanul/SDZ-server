@@ -1,5 +1,8 @@
 package com.elice.sdz.user.service;
 
+import com.elice.sdz.global.exception.CustomException;
+import com.elice.sdz.global.exception.ErrorCode;
+import com.elice.sdz.user.dto.UserIdsDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,14 +27,17 @@ public class AccountService {
     private final JavaMailSender javaMailSender;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public List<Users> findByUserId(String userName, String contact) {
-        return userRepository.findByUserNameAndContactAndSocialFalse(userName, contact);
+    public List<UserIdsDTO> findByUserId(String userName, String contact) {
+        return userRepository.findByUserNameAndContactAndSocialFalse(userName, contact)
+                .stream()
+                .map(user -> new UserIdsDTO(user.getEmail()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public String findUserPassword(String userId, String userName) {
-        Users user = userRepository.findByUserIdAndUserName(userId, userName)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public void createTemporaryPassword(String userId, String userName) {
+        Users user = userRepository.findByEmailAndUserName(userId, userName)
+                .orElseThrow(() ->new CustomException(ErrorCode.USER_NOT_FOUND));
 
         String newPassword = createNewPassword();
 
@@ -38,12 +45,11 @@ public class AccountService {
         user.setLoginLock(false);
         user.setLoginAttempts(0);
         user.setLastFailedLogin(null);
-
         userRepository.save(user);
+
         sendNewPasswordByMail(user.getEmail(), newPassword);
 
-        log.info("Temporary password issued for user: {}", userId);
-        return "Temporary password issuance has been completed.";
+        log.info("사용자 {}의 임시 비밀번호가 발급되었습니다.", userId);
     }
 
     private String createNewPassword() {
@@ -72,9 +78,10 @@ public class AccountService {
             };
 
             javaMailSender.send(mimeMessagePreparator);
-            log.info("New password sent to: {}", toMailAddr);
+            log.info("{} 회원의 새로운 비밀번호가 전송되었습니다.", toMailAddr);
         } catch (Exception e) {
-            log.error("Error occurred while sending email: {}", e.getMessage());
+            log.error("메일 전송 중 오류가 발생했습니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.MAIL_SEND_FAILED);
         }
     }
 }

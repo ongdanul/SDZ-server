@@ -8,7 +8,7 @@ import java.time.Instant;
 @Data
 public class UserListDTO {
 
-    private String userId;
+    private String email;
 
     private Users.Auth userAuth;
 
@@ -18,19 +18,15 @@ public class UserListDTO {
 
     private Instant regDate;
 
-    private String email;
-
     private boolean loginLock;
 
     private boolean social;
 
     public UserListDTO(Users user) {
-        this.userId = user.getUserId();
+        this.email = user.getEmail();
         this.userAuth = user.getUserAuth();
         this.userName = user.getUserName();
         this.contact = user.getContact();
-        this.regDate = user.getRegDate();
-        this.email = user.getEmail();
         this.loginLock = user.isLoginLock();
         this.social = user.isSocial();
     }

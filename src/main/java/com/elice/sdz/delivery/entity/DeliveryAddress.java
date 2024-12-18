@@ -1,26 +1,29 @@
 package com.elice.sdz.delivery.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "delivery_address")
-public class DeliveryAddress {
+public class DeliveryAddress extends BaseEntity {
 
     @Id
     @Column(name = "delivery_address_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deliveryAddressId;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    @ManyToOne
+    @JoinColumn(name = "email", nullable = false)
+    private Users user;
 
     @Column(name = "delivery_address1", length = 20, nullable = false)
     private String deliveryAddress1;
