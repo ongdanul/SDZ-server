@@ -12,11 +12,14 @@ import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ProductService {
@@ -27,11 +30,11 @@ public class ProductService {
 
     // Product 생성
     public ProductResponseDTO createProduct(ProductDTO productDTO) {
-        // Category와 User를 ID로 받아와 조회
+
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        Users user = userRepository.findById("admin123")
+        Users user = userRepository.findById("admin@example.com")
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Product 객체 생성
@@ -93,4 +96,23 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+
+    // 특정 카테고리의 Product 조회
+    public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        List<Product> products = productRepository.findByCategory(category);
+
+        // Stream 대신 for 루프 사용
+        List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
+        for (Product product : products) {
+            productResponseDTOList.add(product.toResponseDTO());
+        }
+
+        return productResponseDTOList;
+    }
+
+
+
 }
