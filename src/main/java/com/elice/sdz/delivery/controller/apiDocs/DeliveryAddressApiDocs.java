@@ -1,5 +1,6 @@
 package com.elice.sdz.delivery.controller.apiDocs;
 
+import com.elice.sdz.delivery.dto.DefaultCheckDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.user.dto.PageRequestDTO;
@@ -20,6 +21,9 @@ public interface DeliveryAddressApiDocs {
 
     @Operation(summary = "배송지 주소 수정", description = "배송지 주소를 수정하는 API입니다.")
     ResponseEntity<String> updateAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DeliveryAddressDTO deliveryAddressDTO);
+
+    @Operation(summary = "기본 배송지 주소 설정", description = "기본 배송지를 수정하는 API입니다.")
+    ResponseEntity<String> updateDefaultAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DefaultCheckDTO defaultCheckDTO);
 
     @Operation(summary = "배송지 주소 삭제", description = "배송지 주소를 삭제하는 API입니다.")
     ResponseEntity<Void> deleteAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId);

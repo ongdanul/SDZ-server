@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<Users, String> {
-
-    Optional<Users> findByEmail(String email);
     long countByUserNameAndContact(String userName, String contact);
 
     //Account
@@ -21,8 +19,8 @@ public interface UserRepository extends JpaRepository<Users, String> {
     Optional<Users> findByEmailAndUserName(String email, String userName);
 
     //Verification
-    @Query("SELECT u.userPassword FROM Users u WHERE u.email = :email")
-    String findPasswordByEmail(@Param("email") String email);
+//    @Query("SELECT u.userPassword FROM Users u WHERE u.email = :email")
+    String findPasswordByEmail(/*@Param("email")*/ String email);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
     boolean existsByEmailAndUserName(String email, String userName);

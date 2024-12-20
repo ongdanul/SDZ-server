@@ -23,11 +23,11 @@ public interface UserApiDocs {
     ResponseEntity<UserDetailDTO> userDetail();
 
     @Operation(summary = "일반 회원 정보 수정", description = "일반 회원 정보 수정을 처리하는 API입니다.")
-    ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("userId") String userId, @Valid @RequestBody UpdateLocalDTO updateLocalDTO, BindingResult bindingResult);
+    ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("email") String email, @Valid @RequestBody UpdateLocalDTO updateLocalDTO, BindingResult bindingResult);
 
     @Operation(summary = "소셜 회원 정보 수정", description = "소셜 회원 정보 수정을 처리하는 API입니다.")
-    ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("userId") String userId, @Valid @RequestBody UpdateSocialDTO updateSocialDTO, BindingResult bindingResult);
+    ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("email") String email, @Valid @RequestBody UpdateSocialDTO updateSocialDTO, BindingResult bindingResult);
 
     @Operation(summary = "회원 삭제", description = "회원 삭제를 처리하는 API입니다.")
-    ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("userId") String userId);
+    ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("email") String email);
 }

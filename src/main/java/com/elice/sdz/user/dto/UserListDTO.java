@@ -4,6 +4,7 @@ import com.elice.sdz.user.entity.Users;
 import lombok.Data;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 public class UserListDTO {
@@ -16,7 +17,7 @@ public class UserListDTO {
 
     private String contact;
 
-    private Instant regDate;
+    private LocalDateTime createdAt;
 
     private boolean loginLock;
 
@@ -27,6 +28,7 @@ public class UserListDTO {
         this.userAuth = user.getUserAuth();
         this.userName = user.getUserName();
         this.contact = user.getContact();
+        this.createdAt = user.getCreatedAt();
         this.loginLock = user.isLoginLock();
         this.social = user.isSocial();
     }

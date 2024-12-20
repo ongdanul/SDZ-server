@@ -2,7 +2,7 @@ package com.elice.sdz.user.service;
 
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
-import com.elice.sdz.user.dto.UserIdsDTO;
+import com.elice.sdz.user.dto.UserAccountDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,16 +27,16 @@ public class AccountService {
     private final JavaMailSender javaMailSender;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public List<UserIdsDTO> findByUserId(String userName, String contact) {
+    public List<UserAccountDTO> findByEmail(String userName, String contact) {
         return userRepository.findByUserNameAndContactAndSocialFalse(userName, contact)
                 .stream()
-                .map(user -> new UserIdsDTO(user.getEmail()))
+                .map(user -> new UserAccountDTO(user.getEmail()))
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public void createTemporaryPassword(String userId, String userName) {
-        Users user = userRepository.findByEmailAndUserName(userId, userName)
+    public void createTemporaryPassword(String email, String userName) {
+        Users user = userRepository.findByEmailAndUserName(email, userName)
                 .orElseThrow(() ->new CustomException(ErrorCode.USER_NOT_FOUND));
 
         String newPassword = createNewPassword();
@@ -49,7 +49,7 @@ public class AccountService {
 
         sendNewPasswordByMail(user.getEmail(), newPassword);
 
-        log.info("사용자 {}의 임시 비밀번호가 발급되었습니다.", userId);
+        log.info("사용자 {}의 임시 비밀번호가 발급되었습니다.", email);
     }
 
     private String createNewPassword() {
