@@ -62,14 +62,14 @@ public class CustomSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         //CORS
-        http.cors(cors -> cors.configurationSource(request -> {
+        /*http.cors(cors -> cors.configurationSource(request -> {
             var config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:5173"));
+            config.setAllowedOrigins(List.of("http://localhost:5174"));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             config.setAllowCredentials(true);
-            config.setAllowedHeaders(List.of("Authorization"));
+            config.setAllowedHeaders(List.of("*"));
             return config;
-        }));
+        }));*/
 
         //접근 권한 설정
         http.authorizeHttpRequests(authorize -> authorize

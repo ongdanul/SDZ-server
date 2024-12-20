@@ -17,7 +17,7 @@ public enum ErrorCode {
     INVALID_ORDER(HttpStatus.BAD_REQUEST, "INVALID_ORDER", "주문이 잘못되었습니다."),
     ORDER_CANNOT_BE_MODIFIED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_MODIFIED", "주문을 수정할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
     ORDER_CANNOT_BE_CANCELLED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_CANCELLED", "주문을 취소할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
-
+    ORDER_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_DETAIL_NOT_FOUND","주문 상품 정보를 찾을 수 없습니다"),
     // 로그인 관련 에러
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 거부: 해당 리소스에 접근할 권한이 없습니다."),
     MISSING_AUTHORIZATION(HttpStatus.FORBIDDEN, "MISSING_AUTHORIZATION", "권한 정보가 없습니다."),
