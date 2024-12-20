@@ -51,16 +51,11 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             AuthenticationException {
         //TODO 로그인 기능 완성후 TEST용 로그 삭제하기
         log.info("Test - LoginFilter is being called"); //Test
-//        String email = request.getParameter("email");
-//        String password = request.getParameter("password");
-//        String email = obtainEmail(request);
-//        String password = obtainPassword(request);
 
         ObjectMapper objectMapper = new ObjectMapper();
         LoginRequest loginRequest = null;
 
         try {
-            // JSON 데이터를 LoginRequest 객체로 변환
             loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
             request.setAttribute("loginRequest", loginRequest);
 
@@ -75,9 +70,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         boolean rememberMe = loginRequest.isRememberMe();
 
         log.info("Attempting authentication - email: {}, password: {}", email, password);
-
-//        boolean rememberId = "true".equals(request.getParameter("rememberId"));
-//        boolean rememberMe = "true".equals(request.getParameter("rememberMe"));
 
         String rememberIdString = Boolean.toString(rememberId); //Test
         String rememberMeString = Boolean.toString(rememberMe); //Test

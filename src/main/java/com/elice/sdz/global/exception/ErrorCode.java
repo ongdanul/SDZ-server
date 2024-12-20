@@ -35,7 +35,6 @@ public enum ErrorCode {
     // 로그아웃 관련 에러
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "허용되지 않는 메소드입니다."),
 
-
     // 회원 가입 관련 에러
     OAUTH2_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "OAUTH2_AUTHENTICATION_FAILED", "지원되지 않는 가입유형입니다."),
     SOCIAL_USER_EXISTS(HttpStatus.BAD_REQUEST, "SOCIAL_USER_EXISTS", "해당 소셜 계정으로 이미 가입되어 있습니다."),
