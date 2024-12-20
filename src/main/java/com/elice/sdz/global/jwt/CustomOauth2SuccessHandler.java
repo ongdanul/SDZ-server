@@ -6,7 +6,6 @@ import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomOAuth2User;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.repository.RefreshRepository;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,6 +34,9 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
 
+    @Value("${spring.targetUrl}")
+    String targetUrl;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -54,7 +56,7 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
-
+        response.sendRedirect(targetUrl);
         log.info("Test - Oauth login success");
     }
 
