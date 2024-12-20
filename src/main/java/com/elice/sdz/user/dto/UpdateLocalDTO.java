@@ -12,7 +12,9 @@ import lombok.Data;
 @Builder
 public class UpdateLocalDTO {
     @NotBlank
-    private String userId;
+    @Email
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    private String email;
 
     @NotBlank
     @Size(min = 8, max = 13)
@@ -21,23 +23,19 @@ public class UpdateLocalDTO {
     @NotBlank
     private String userName;
 
+    @NotBlank
     private String nickname;
 
     @NotBlank
     private String contact;
 
-    @Email
-    @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-    private String email;
-
     private boolean social;
 
     public void updateEntity(Users user, String encodedPassword) {
+        user.setEmail(email);
         user.setUserPassword(encodedPassword);
         user.setUserName(userName);
-        user.setNickname(nickname == null ? userName : nickname);
+        user.setNickname(nickname);
         user.setContact(contact);
-        user.setEmail(email);
     }
 }

@@ -1,5 +1,6 @@
 package com.elice.sdz.delivery.service;
 
+import com.elice.sdz.delivery.dto.DefaultCheckDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
@@ -29,10 +30,10 @@ public class DeliveryAddressService {
     private final UserRepository userRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
 
-    public PageResponseDTO<DeliveryAddressListDTO> deliveryAddressList(PageRequestDTO pageRequestDTO, String userId) {
+    public PageResponseDTO<DeliveryAddressListDTO> deliveryAddressList(PageRequestDTO pageRequestDTO, String email) {
         Pageable pageable = pageRequestDTO.getPageable();
 
-        Page<DeliveryAddress> result = findAddressesByUserId(userId, pageable);
+        Page<DeliveryAddress> result = findAddressesByEmail(email, pageable);
 
         List<DeliveryAddressListDTO> dtoList = result.getContent()
                 .stream()
@@ -47,14 +48,14 @@ public class DeliveryAddressService {
                 .build();
     }
 
-    private Page<DeliveryAddress> findAddressesByUserId(String userId, Pageable pageable) {
-        Users user = userRepository.findById(userId)
+    private Page<DeliveryAddress> findAddressesByEmail(String email, Pageable pageable) {
+        Users user = userRepository.findById(email)
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
         return deliveryAddressRepository.findAllByUser(user, pageable);
     }
 
     public void createNewAddress (DeliveryAddressDTO deliveryAddressDTO) {
-        Users user = userRepository.findByEmail(deliveryAddressDTO.getUserId())
+        Users user = userRepository.findById(deliveryAddressDTO.getEmail())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
@@ -69,7 +70,7 @@ public class DeliveryAddressService {
 
     @Transactional
     public void updateAddress(Long deliveryAddressId, DeliveryAddressDTO deliveryAddressDTO) {
-        Users user = userRepository.findByEmail(deliveryAddressDTO.getUserId())
+        Users user = userRepository.findById(deliveryAddressDTO.getEmail())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
@@ -77,6 +78,10 @@ public class DeliveryAddressService {
 
         if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
             throw new AccessDeniedException("이 주소를 수정할 권한이 없습니다.");
+        }
+
+        if (deliveryAddressDTO.isDefaultCheck()) {
+            updateAllDefaultAddresses(user);
         }
 
         deliveryAddressDTO.updateEntity(deliveryAddress, user);
@@ -90,11 +95,49 @@ public class DeliveryAddressService {
     }
 
     @Transactional
-    public void deleteAddress(Long deliveryAddressId, String userId) {
+    public void updateDefaultCheck(Long deliveryAddressId, DefaultCheckDTO defaultCheckDTO){
+        Users user = userRepository.findById(defaultCheckDTO.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
-        if(!deliveryAddress.getUser().getEmail().equals(userId)) {
+        if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
+            throw new AccessDeniedException("이 주소를 수정할 권한이 없습니다.");
+        }
+
+        if (defaultCheckDTO.isDefaultCheck()) {
+            updateAllDefaultAddresses(user);
+        }
+
+        deliveryAddress.setDefaultCheck(defaultCheckDTO.isDefaultCheck());
+
+        try {
+            deliveryAddressRepository.save(deliveryAddress);
+            log.info("배송 주소가 성공적으로 수정되었습니다.");
+        } catch (Exception e) {
+            log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void updateAllDefaultAddresses(Users user) {
+        List<DeliveryAddress> deliveryAddressList = deliveryAddressRepository.findAllByUser(user);
+        deliveryAddressList.forEach(addr -> {
+            if (addr.isDefaultCheck()) {
+                addr.setDefaultCheck(false);
+            }
+        });
+        deliveryAddressRepository.saveAll(deliveryAddressList);
+    }
+
+    @Transactional
+    public void deleteAddress(Long deliveryAddressId, String email) {
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
+
+        if(!deliveryAddress.getUser().getEmail().equals(email)) {
             throw new AccessDeniedException("삭제할 권한이 없습니다.");
         }
         deliveryAddressRepository.delete(deliveryAddress);

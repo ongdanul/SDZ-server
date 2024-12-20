@@ -9,6 +9,7 @@
     import com.elice.sdz.user.dto.UpdateSocialDTO;
     import com.elice.sdz.user.entity.Users;
     import com.elice.sdz.user.repository.RefreshRepository;
+    import com.elice.sdz.user.repository.SocialRepository;
     import com.elice.sdz.user.repository.UserRepository;
     import jakarta.servlet.http.HttpServletResponse;
     import jakarta.validation.Valid;
@@ -24,6 +25,7 @@
     @RequiredArgsConstructor
     public class UserService {
 
+        private final SocialRepository socialRepository;
         private final RefreshRepository refreshRepository;
         private final UserRepository userRepository;
         private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -32,16 +34,15 @@
         public boolean signUpProcess(@Valid SignUpDTO signUpDTO) {
             final int MAX_USER_ACCOUNTS = 3;
 
-            long countUserIds = countUserIds(signUpDTO.getUserName(), signUpDTO.getContact());
-            if (countUserIds >= MAX_USER_ACCOUNTS) { //최대 가입 계정 수 3개 제한
+            long countEmails = countEmails(signUpDTO.getUserName(), signUpDTO.getContact());
+            if (countEmails >= MAX_USER_ACCOUNTS) { //최대 가입 계정 수 3개 제한
                 log.error("최대 가입 계정 수가 초과되었습니다. - 가입 시도한 회원 정보: userName={} contact={}", signUpDTO.getUserName(), signUpDTO.getContact());
                 throw new CustomException(ErrorCode.SIGN_UP_LIMIT_EXCEEDED);
             }
 
-            signUpDTO.setUserPassword(bCryptPasswordEncoder.encode(signUpDTO.getUserPassword()));
-            Users user = signUpDTO.toEntity();
-
             try {
+                signUpDTO.setUserPassword(bCryptPasswordEncoder.encode(signUpDTO.getUserPassword()));
+                Users user = signUpDTO.toEntity();
                 userRepository.save(user);
                 log.info("회원가입에 성공하였습니다.: {}", user.getEmail());
                 return true;
@@ -51,7 +52,7 @@
             }
         }
 
-        public long countUserIds(String userName, String contact) {
+        public long countEmails(String userName, String contact) {
             try {
                 return userRepository.countByUserNameAndContact(userName, contact);
             } catch (Exception e) {
@@ -60,8 +61,8 @@
             }
         }
 
-        public UserDetailDTO findByUserId(String userId) {
-            Users user = userRepository.findByEmail(userId)
+        public UserDetailDTO findUserInfo(String email) {
+            Users user = userRepository.findById(email)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             return UserDetailDTO.toDTO(user);
@@ -69,7 +70,7 @@
 
         @Transactional
         public void updateLocalUser(UpdateLocalDTO updateLocalDTO) {
-            Users user = userRepository.findByEmail(updateLocalDTO.getUserId())
+            Users user = userRepository.findById(updateLocalDTO.getEmail())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             String userPassword = updateLocalDTO.getUserPassword();
@@ -82,7 +83,7 @@
 
         @Transactional
         public void updateSocialUser(UpdateSocialDTO updateSocialDTO) {
-            Users user = userRepository.findByEmail(updateSocialDTO.getUserId())
+            Users user = userRepository.findById(updateSocialDTO.getEmail())
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             updateSocialDTO.updateEntity(user);
@@ -104,15 +105,19 @@
     //    }
 
         @Transactional
-        public void deleteUser(HttpServletResponse response, String userId) {
-            Users user = userRepository.findByEmail(userId)
+        public void deleteUser(HttpServletResponse response, String email) {
+            Users user = userRepository.findById(email)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            if(user.isSocial()){
+                socialRepository.deleteByUser(user);
+            }
 
             userRepository.delete(user);
             try {
-                refreshRepository.deleteAllByEmail(userId);
+                refreshRepository.deleteAllByEmail(email);
             } catch (Exception e) {
-                log.error("회원ID {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", userId, e);
+                log.error("회원 {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", email, e);
                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
             CookieUtils.deleteCookie(response, "refresh");

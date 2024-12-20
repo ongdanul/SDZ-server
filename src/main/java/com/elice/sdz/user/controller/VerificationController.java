@@ -21,11 +21,11 @@ public class VerificationController implements VerificationApiDocs {
     private final UserService userService;
     private final VerificationService verificationService;
 
-    @PostMapping("/userId")
-    public ResponseEntity<Map<String, Boolean>> checkUserId(@RequestBody Map<String, String> requestBody) {
+    @PostMapping("/email")
+    public ResponseEntity<Map<String, Boolean>> checkEmailExists(@RequestBody Map<String, String> requestBody) {
 
-        String userId = requestBody.get("userId");
-        boolean exists = verificationService.isUserIdExists(userId);
+        String email = requestBody.get("email");
+        boolean exists = verificationService.isUserEmailExists(email);
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
@@ -46,12 +46,12 @@ public class VerificationController implements VerificationApiDocs {
     }
 
     @PostMapping("/userLimit")
-    public ResponseEntity<Map<String, Boolean>> checkUserLimit(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<Map<String, Boolean>> checkAccountLimit(@RequestBody Map<String, String> requestBody) {
 
         String userName = requestBody.get("userName");
         String contact = requestBody.get("contact");
 
-        long userLimit = userService.countUserIds(userName, contact);
+        long userLimit = userService.countEmails(userName, contact);
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("userLimit", userLimit < 3);
@@ -60,12 +60,12 @@ public class VerificationController implements VerificationApiDocs {
     }
 
     @PostMapping("/userInfo")
-    public ResponseEntity<Map<String, Boolean>> checkUser(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<Map<String, Boolean>> validateEmailExists(@RequestBody Map<String, String> requestBody) {
 
         String userName = requestBody.get("userName");
-        String userId = requestBody.get("userId");
+        String email = requestBody.get("email");
 
-        boolean exists = verificationService.existsByUserIdAndUserName(userName, userId);
+        boolean exists = verificationService.existsByEmailAndUserName(userName, email);
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
@@ -76,9 +76,9 @@ public class VerificationController implements VerificationApiDocs {
     @PostMapping("/password")
     public ResponseEntity<Map<String, Boolean>> checkPassword(@RequestBody Map<String, String> requestBody) {
 
-        String userId = requestBody.get("userId");
+        String email = requestBody.get("email");
         String inputPassword = requestBody.get("userPassword");
-        boolean valid = verificationService.checkPassword(userId, inputPassword);
+        boolean valid = verificationService.checkPassword(email, inputPassword);
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("valid", valid);

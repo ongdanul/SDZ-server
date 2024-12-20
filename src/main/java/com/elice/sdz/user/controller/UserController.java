@@ -27,7 +27,7 @@ public class UserController implements UserApiDocs {
 
     @Override
     @PostMapping("/sign-up")
-    public ResponseEntity<Map<String,Object>> signUpProcess(@Valid SignUpDTO signUpDTO, BindingResult bindingResult) {
+    public ResponseEntity<Map<String,Object>> signUpProcess(@RequestBody @Valid SignUpDTO signUpDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
             response.put("success", false);
@@ -50,14 +50,15 @@ public class UserController implements UserApiDocs {
 
     @GetMapping("/my-page")
     public ResponseEntity<UserDetailDTO> userDetail(){
-        String userId = authenticationService.getCurrentUserId();
-        UserDetailDTO userDetailDTO = userService.findByUserId(userId);
+        String email = authenticationService.getCurrentUser();
+        log.info(email);
+        UserDetailDTO userDetailDTO = userService.findUserInfo(email);
         return ResponseEntity.ok(userDetailDTO);
     }
 
-    @PutMapping("/local/{userId}")
-    @PreAuthorize("#userId == authentication.name && !@userService.isSocial(authentication.name)")
-    public ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("userId") String userId,
+    @PutMapping("/local/{email}")
+    @PreAuthorize("#email == authentication.name && !@userService.isSocial(authentication.name)")
+    public ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateLocalDTO updateLocalDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
@@ -66,16 +67,16 @@ public class UserController implements UserApiDocs {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        updateLocalDTO.setUserId(authenticationService.getCurrentUserId());
+        updateLocalDTO.setEmail(authenticationService.getCurrentUser());
         userService.updateLocalUser(updateLocalDTO);
         response.put("success", true);
         response.put("message", "일반 회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PutMapping("/social/{userId}")
-    @PreAuthorize("#userId == authentication.name && @userService.isSocial(authentication.name)")
-    public ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("userId") String userId,
+    @PutMapping("/social/{email}")
+    @PreAuthorize("#email == authentication.name && @userService.isSocial(authentication.name)")
+    public ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateSocialDTO updateSocialDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         if (bindingResult.hasErrors()) {
@@ -84,17 +85,17 @@ public class UserController implements UserApiDocs {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        updateSocialDTO.setUserId(authenticationService.getCurrentUserId());
+        updateSocialDTO.setEmail(authenticationService.getCurrentUser());
         userService.updateSocialUser(updateSocialDTO);
         response.put("success", true);
         response.put("message", "소셜 회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping("/{userId}")
-    @PreAuthorize("#userId == authentication.name")
-    public ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("userId") String userId) {
-        userService.deleteUser(response, userId);
+    @DeleteMapping("/{email}")
+    @PreAuthorize("#email == authentication.name")
+    public ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("email") String email) {
+        userService.deleteUser(response, email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

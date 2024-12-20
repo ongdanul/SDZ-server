@@ -81,8 +81,8 @@ public class AdminService {
     }
 
     @Transactional
-    public void updateLoginLock(String userId){
-        Users user = userRepository.findByEmail(userId)
+    public void updateLoginLock(String email){
+        Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.setLoginLock(!user.isLoginLock());
@@ -90,8 +90,8 @@ public class AdminService {
     }
 
     @Transactional
-    public void updateAuth(String userId){
-        Users user = userRepository.findByEmail(userId)
+    public void updateAuth(String email){
+        Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         user.setUserAuth(user.getUserAuth() == Users.Auth.ROLE_USER
@@ -101,24 +101,24 @@ public class AdminService {
     }
 
     @Transactional
-    public void adminDeleteUser(String userId) {
-        Users user = userRepository.findByEmail(userId)
+    public void adminDeleteUser(String email) {
+        Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
     }
 
     @Transactional
-    public void adminDeleteByUserIds(List<String> userIds) {
-        if (userIds.isEmpty()) {
+    public void adminDeleteByUsers(List<String> emails) {
+        if (emails.isEmpty()) {
             throw new CustomException(ErrorCode.NO_USER_IDS_TO_DELETE);
         }
 
-        List<Users> users = userRepository.findAllById(userIds);
-        if (users.size() != userIds.size()) {
+        List<Users> users = userRepository.findAllById(emails);
+        if (users.size() != emails.size()) {
             throw new CustomException(ErrorCode.USER_IDS_NOT_EXIST);
         }
 
-        userRepository.deleteAllByEmailIn(userIds);
+        userRepository.deleteAllByEmailIn(emails);
     }
 }
