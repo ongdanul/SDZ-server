@@ -15,7 +15,7 @@ public class DeliveryAddressDTO {
     private Long deliveryAddressId;
 
     @NotBlank
-    private String userId;
+    private String email;
 
     @NotBlank
     private String deliveryAddress1;

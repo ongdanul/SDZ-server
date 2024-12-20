@@ -18,14 +18,14 @@ public interface AdminApiDocs {
     ResponseEntity<PageResponseDTO<UserListDTO>> userList(@ParameterObject PageRequestDTO pageRequestDTO);
 
     @Operation(summary = "회원 로그인 잠금 여부 변경", description = "회원의 로그인 잠금 여부를 변경하는 API입니다.")
-    ResponseEntity<String> updateLoginLock(@PathVariable("userId") String userId);
+    ResponseEntity<String> updateLoginLock(@PathVariable("email") String email);
 
     @Operation(summary = "회원 권한 변경", description = "회원의 권한을 변경하는 API입니다.")
-    ResponseEntity<String> updateAuth(@PathVariable("userId") String userId);
+    ResponseEntity<String> updateAuth(@PathVariable("email") String email);
 
     @Operation(summary = "회원 삭제", description = "회원 삭제를 처리하는 API입니다.")
-    ResponseEntity<Void> deleteUser(@PathVariable("userId") String userId);
+    ResponseEntity<Void> deleteUser(@PathVariable("email") String email);
 
     @Operation(summary = "회원 다중 삭제", description = "회원을 체크박스를 통해 다중 삭제 처리하는 API입니다.")
-    ResponseEntity<Void> deleteUsers(@RequestBody List<String> userIds);
+    ResponseEntity<Void> deleteUsers(@RequestBody List<String> emails);
 }

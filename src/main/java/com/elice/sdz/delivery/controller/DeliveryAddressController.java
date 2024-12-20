@@ -1,6 +1,7 @@
 package com.elice.sdz.delivery.controller;
 
 import com.elice.sdz.delivery.controller.apiDocs.DeliveryAddressApiDocs;
+import com.elice.sdz.delivery.dto.DefaultCheckDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.service.DeliveryAddressService;
@@ -26,31 +27,39 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
 
     @GetMapping("/list")
     public ResponseEntity<PageResponseDTO<DeliveryAddressListDTO>> deliveryAddressList(@ParameterObject PageRequestDTO pageRequestDTO) {
-        String userId = authenticationService.getCurrentUserId();
-        PageResponseDTO<DeliveryAddressListDTO> response = deliveryAddressService.deliveryAddressList(pageRequestDTO, userId);
+        String email = authenticationService.getCurrentUser();
+        PageResponseDTO<DeliveryAddressListDTO> response = deliveryAddressService.deliveryAddressList(pageRequestDTO, email);
         return ResponseEntity.ok(response);
     }
     @PostMapping
-    @PreAuthorize("#deliveryAddressDTO.userId == authentication.name")
+    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
     public ResponseEntity<Void> createNewAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
-        deliveryAddressDTO.setUserId(authenticationService.getCurrentUserId());
+        deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());
         deliveryAddressService.createNewAddress(deliveryAddressDTO);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PutMapping("/{deliveryAddressId}")
-    @PreAuthorize("#deliveryAddressDTO.userId == authentication.name")
+    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
     public ResponseEntity<String> updateAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DeliveryAddressDTO deliveryAddressDTO) {
-        deliveryAddressDTO.setUserId(authenticationService.getCurrentUserId());
+        deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());
         deliveryAddressService.updateAddress(deliveryAddressId, deliveryAddressDTO);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PutMapping("/{deliveryAddressId}/default")
+    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
+    public ResponseEntity<String> updateDefaultAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DefaultCheckDTO defaultCheckDTO) {
+        defaultCheckDTO.setEmail(authenticationService.getCurrentUser());
+        deliveryAddressService.updateDefaultCheck(deliveryAddressId, defaultCheckDTO);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     @DeleteMapping("/{deliveryAddressId}")
-    @PreAuthorize("#userId == authentication.name")
+    @PreAuthorize("#email == authentication.name")
     public ResponseEntity<Void> deleteAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId) {
-        String userId = authenticationService.getCurrentUserId();
-        deliveryAddressService.deleteAddress(deliveryAddressId, userId);
+        String email = authenticationService.getCurrentUser();
+        deliveryAddressService.deleteAddress(deliveryAddressId, email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

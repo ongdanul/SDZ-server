@@ -23,6 +23,7 @@ public enum ErrorCode {
     MISSING_AUTHORIZATION(HttpStatus.FORBIDDEN, "MISSING_AUTHORIZATION", "권한 정보가 없습니다."),
     LOGIN_LOCKED(HttpStatus.FORBIDDEN, "LOGIN_LOCKED", "로그인 잠금된 계정입니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "로그인에 실패하였습니다."),
+    INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_LOGIN_REQUEST", "유효하지 않은 엑세스 로그인 요청입니다."),
 
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_ACCESS_TOKEN", "만료된 엑세스 토큰입니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_REFRESH_TOKEN", "만료된 리프레시 토큰입니다."),
