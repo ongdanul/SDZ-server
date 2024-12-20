@@ -69,6 +69,7 @@ public class CustomSecurityConfig {
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+            config.setExposedHeaders(List.of("Authorization"));
             return config;
         }));
 
