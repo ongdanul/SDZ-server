@@ -72,7 +72,10 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예기치 않은 오류가 발생했습니다."),
 
     // 장바구니 관련 에러
-    ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_ITEM_NOT_FOUND", "장바구니가 존재하지 않습니다.");
+    ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_ITEM_NOT_FOUND", "장바구니가 존재하지 않습니다."),
+
+    // 이미지 관련 에러
+    IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
