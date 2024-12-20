@@ -12,6 +12,7 @@ public class OrderItemDTO {
     public static class OrderItemDetailDTO {
         private Long productId;
         private int quantity;
+        private String productName;
         private double productAmount;
     }
 }

@@ -58,6 +58,7 @@ public class OrderItemService {
                 .map(detail -> {
                     OrderItemDTO.OrderItemDetailDTO detailDTO = new OrderItemDTO.OrderItemDetailDTO();
                     detailDTO.setProductId(detail.getProduct().getProductId());
+                    detailDTO.setProductName(detail.getProduct().getProductName());
                     detailDTO.setQuantity(detail.getQuantity());
                     detailDTO.setProductAmount(detail.getProductAmount());
                     return detailDTO;

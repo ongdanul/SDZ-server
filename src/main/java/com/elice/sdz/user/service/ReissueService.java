@@ -35,11 +35,11 @@ public class ReissueService {
             return false;
         }
 
-        String email = jwtUtil.getUsername(refresh);
-        String role = jwtUtil.getRole(refresh);
+        String email = jwtUtil.getEmail(refresh);
+        String auth = jwtUtil.getAuth(refresh);
 
-        String newAccessToken = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
-        String newRefreshToken = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
+        String newAccessToken = jwtUtil.createJwt("access", email, auth, ACCESS_TOKEN_EXPIRATION);
+        String newRefreshToken = jwtUtil.createJwt("refresh", email, auth, REFRESH_TOKEN_EXPIRATION);
 
         refreshRepository.deleteByRefresh(refresh);
         addRefreshToken(email, newRefreshToken);
@@ -51,6 +51,7 @@ public class ReissueService {
 
         return true;
     }
+
     private boolean validateRefreshToken(String refresh) {
         try {
             jwtUtil.isExpired(refresh);
