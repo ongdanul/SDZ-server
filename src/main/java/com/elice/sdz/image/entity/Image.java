@@ -27,6 +27,9 @@ public class Image extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
     @ManyToOne
     @JoinColumn(name = "review_id")
     private Review review;
@@ -35,15 +38,8 @@ public class Image extends BaseEntity {
     @JoinColumn(name = "inquiry_id")
     private Inquiry inquiry;
 
-    @Column(name = "image_origin", nullable = false)
-    private String imageOrigin;
-
-    @Column(name = "image_uuid", nullable = false)
-    private String imageUuid;
-
-    @Column(name = "upload_path")
-    private String uploadPath;
-
-    @Column(name = "thumbnail_path")
-    private String thumbnailPath;
+    public Image(Product product, String imagePath){
+        this.product = product;
+        this.imagePath = imagePath;
+    }
 }
