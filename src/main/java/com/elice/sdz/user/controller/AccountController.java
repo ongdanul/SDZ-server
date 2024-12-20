@@ -3,7 +3,7 @@ package com.elice.sdz.user.controller;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.controller.apiDocs.AccountApiDocs;
-import com.elice.sdz.user.dto.UserIdsDTO;
+import com.elice.sdz.user.dto.UserAccountDTO;
 import com.elice.sdz.user.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,24 +25,24 @@ public class AccountController implements AccountApiDocs {
     private final AccountService accountService;
 
     @PostMapping("/find-id")
-    public ResponseEntity<List<UserIdsDTO>> findId(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<List<UserAccountDTO>> findId(@RequestBody Map<String, String> requestBody) {
         String userName = requestBody.get("userName");
         String contact = requestBody.get("contact");
 
-        List<UserIdsDTO> userIds = accountService.findByUserId(userName, contact);
+        List<UserAccountDTO> emails = accountService.findByEmail(userName, contact);
 
-        if (userIds.isEmpty()) {
+        if (emails.isEmpty()) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
-        return ResponseEntity.ok(userIds);
+        return ResponseEntity.ok(emails);
     }
 
     @PostMapping("/find-pw")
     public ResponseEntity<String> findPw(@RequestBody Map<String, String> requestBody) {
         String userName = requestBody.get("userName");
-        String userId = requestBody.get("userId");
+        String email = requestBody.get("email");
 
-        accountService.createTemporaryPassword(userId, userName);
+        accountService.createTemporaryPassword(email, userName);
         return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
     }
 }

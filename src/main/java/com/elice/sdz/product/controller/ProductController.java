@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
-@CrossOrigin(origins = "http://localhost:5173")
+
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
     private final ProductService productService;
@@ -72,4 +74,10 @@ public class ProductController {
         productService.deleteProduct(productId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/category/{categoryId}")
+    public List<ProductResponseDTO> getProductsByCategory(@PathVariable Long categoryId) {
+        return productService.getProductsByCategory(categoryId);
+    }
+
 }

@@ -32,12 +32,12 @@ public class JWTUtil {
         return getClaims(token).get(claimName, type);
     }
 
-    public String getUsername(String token) {
-        return getClaim(token, "username", String.class);
+    public String getEmail(String token) {
+        return getClaim(token, "email", String.class);
     }
 
-    public String getRole(String token) {
-        return getClaim(token, "role", String.class);
+    public String getAuth(String token) {
+        return getClaim(token, "auth", String.class);
     }
 
     public String getCategory(String token) {
@@ -54,13 +54,13 @@ public class JWTUtil {
         return expirationDate.before(new Date());
     }
 
-    public String createJwt(String category, String username, String role, Long expiredMs) {
+    public String createJwt(String category, String email, String auth, Long expiredMs) {
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .claim("category", category)
-                .claim("username", username)
-                .claim("role", role)
+                .claim("email", email)
+                .claim("auth", auth)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)

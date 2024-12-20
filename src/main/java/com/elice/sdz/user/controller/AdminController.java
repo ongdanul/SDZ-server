@@ -30,27 +30,27 @@ public class AdminController implements AdminApiDocs {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{userId}/login-lock")
-    public ResponseEntity<String> updateLoginLock(@PathVariable("userId") String userId) {
-        adminService.updateLoginLock(userId);
+    @PutMapping("/{email}/login-lock")
+    public ResponseEntity<String> updateLoginLock(@PathVariable("email") String email) {
+        adminService.updateLoginLock(email);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PutMapping("/{userId}/auth")
-    public ResponseEntity<String> updateAuth(@PathVariable("userId") String userId) {
-        adminService.updateAuth(userId);
+    @PutMapping("/{email}/auth")
+    public ResponseEntity<String> updateAuth(@PathVariable("email") String email) {
+        adminService.updateAuth(email);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") String userId) {
-        adminService.adminDeleteUser(userId);
+    @DeleteMapping("/{email}")
+    public ResponseEntity<Void> deleteUser(@PathVariable("email") String email) {
+        adminService.adminDeleteUser(email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/users")
-    public ResponseEntity<Void> deleteUsers(@RequestBody List<String> userIds) {
-        adminService.adminDeleteByUserIds(userIds);
+    public ResponseEntity<Void> deleteUsers(@RequestBody List<String> emails) {
+        adminService.adminDeleteByUsers(emails);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

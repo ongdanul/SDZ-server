@@ -53,12 +53,12 @@
         private OAuth2User oAuth2UserProcess(OAuth2UserInfo oAuth2UserInfo) {
             String provider = oAuth2UserInfo.getProvider();
             String providerId = oAuth2UserInfo.getId();
-            String userId = provider + "_" + providerId;
+            String email = provider + "_" + providerId;
 
-            return userRepository.findByEmail(userId)
+            return userRepository.findById(email)
                     .map(user -> {
                         if (!user.isSocial()) {
-                            log.warn("이미 일반 회원으로 등록된 ID입니다.");
+                            log.warn("이미 일반 회원으로 등록된 아이디입니다.");
                             throw new CustomException(ErrorCode.SOCIAL_USER_EXISTS);
                         }
                         return loadExistingSocialUser(user, oAuth2UserInfo);
@@ -87,11 +87,8 @@
 
             Users user = Users.builder()
                     .email(oAuth2UserInfo.getProvider() + "_" + oAuth2UserInfo.getId())
-                    .userPassword(null)
                     .userAuth(Users.Auth.ROLE_USER)
                     .userName(oAuth2UserInfo.getName())
-                    .contact(null)
-                    .email(oAuth2UserInfo.getEmail() != null && !oAuth2UserInfo.getEmail().isEmpty() ? oAuth2UserInfo.getEmail() : "socialUser")
                     .profileUrl(oAuth2UserInfo.getProfileUrl() != null && !oAuth2UserInfo.getProfileUrl().isEmpty() ? oAuth2UserInfo.getProfileUrl() : null)
                     .social(true)
                     .build();

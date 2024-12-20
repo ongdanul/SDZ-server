@@ -24,7 +24,6 @@ import java.io.IOException;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
-    private  final ReissueService reissueService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -48,8 +47,8 @@ public class JWTFilter extends OncePerRequestFilter {
             }
 
             Users user = new Users();
-            user.setEmail(jwtUtil.getUsername(accessToken));
-            user.setUserAuth(Users.Auth.valueOf(jwtUtil.getRole(accessToken)));
+            user.setEmail(jwtUtil.getEmail(accessToken));
+            user.setUserAuth(Users.Auth.valueOf(jwtUtil.getAuth(accessToken)));
 
             CustomUserDetails customUserDetails = new CustomUserDetails(user);
             Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());

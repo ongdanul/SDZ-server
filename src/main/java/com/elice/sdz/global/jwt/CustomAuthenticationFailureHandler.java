@@ -2,6 +2,7 @@ package com.elice.sdz.global.jwt;
 
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
+import com.elice.sdz.user.dto.LoginRequest;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,11 +24,13 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) {
-        String userId = request.getParameter("username");
-        log.info("Test - onAuthenticationFailure userId : {}", userId);
+        LoginRequest loginRequest = (LoginRequest) request.getAttribute("loginRequest");
+        String email = loginRequest.getEmail();
+
+        log.info("Test - onAuthenticationFailure email : {}", email);
 
         // 로그인 실패 처리: 실패 횟수 증가 및 잠금 여부 처리
-        boolean isLocked = handleLoginFailure(userId);
+        boolean isLocked = handleLoginFailure(email);
 
         // 이미 잠금된 계정인 경우
         if (isLocked) {
@@ -36,16 +39,15 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         throw new CustomException(ErrorCode.LOGIN_FAILED);
     }
 
-    public boolean handleLoginFailure(String userId) {
+    public boolean handleLoginFailure(String email) {
         final int MAX_ATTEMPTS = 5;
 
-        Users user = userRepository.findByEmail(userId)
-                .orElseThrow(() ->
-                        new CustomException(ErrorCode.USER_NOT_FOUND));
+        Users user = userRepository.findById(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 계정이 이미 잠금 상태인 경우
         if (user.isLoginLock()) {
-            log.error("로그인 잠금된 아이디입니다.: {} ", userId);
+            log.error("로그인 잠금된 아이디입니다.: {} ", email);
             return true;
         }
 

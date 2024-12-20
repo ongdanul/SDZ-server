@@ -8,7 +8,7 @@ public class DeliveryAddressListDTO {
 
     private Long deliveryAddressId;
 
-    private String userId;
+    private String email;
 
     private String deliveryAddress1;
 
@@ -26,7 +26,7 @@ public class DeliveryAddressListDTO {
 
     public DeliveryAddressListDTO(DeliveryAddress deliveryAddress) {
         this.deliveryAddressId = deliveryAddress.getDeliveryAddressId();
-        this.userId = deliveryAddress.getUser().getEmail();
+        this.email = deliveryAddress.getUser().getEmail();
         this.deliveryAddress1 = deliveryAddress.getDeliveryAddress1();
         this.deliveryAddress2 = deliveryAddress.getDeliveryAddress2();
         this.deliveryAddress3 = deliveryAddress.getDeliveryAddress3();

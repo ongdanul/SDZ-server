@@ -1,6 +1,7 @@
 package com.elice.sdz.user.dto;
 
 import com.elice.sdz.user.entity.Users;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +24,7 @@ public class SignUpDTO {
     @NotBlank
     private String userName;
 
+    @NotBlank
     private String nickname;
 
     @NotBlank
@@ -34,7 +36,7 @@ public class SignUpDTO {
                 .userPassword(userPassword)
                 .userAuth(Users.Auth.ROLE_USER)
                 .userName(userName)
-                .nickname(nickname == null ? userName : nickname)
+                .nickname(nickname)
                 .contact(contact)
                 .build();
     }
