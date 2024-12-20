@@ -4,6 +4,7 @@ import com.elice.sdz.category.entity.Category;
 import com.elice.sdz.category.repository.CategoryRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
+import com.elice.sdz.image.service.ImageService;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
@@ -24,14 +26,15 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ImageService imageService;
 
     // Product 생성
-    public ProductResponseDTO createProduct(ProductDTO productDTO) {
+    public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images) {
         // Category와 User를 ID로 받아와 조회
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        Users user = userRepository.findById("admin123")
+        Users user = userRepository.findById("admin@example.com")
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Product 객체 생성
@@ -45,7 +48,9 @@ public class ProductService {
                 productDTO.getProductContent()
         );
 
-        return productRepository.save(product).toResponseDTO();
+        product = productRepository.save(product);
+        imageService.uploadImage(product, images);
+        return product.toResponseDTO();
     }
 
     // Product 조회
