@@ -16,6 +16,6 @@ public class SecurityConstants {
     public static final int REMEMBER_ME_EXPIRATION =  7 * 24 * 60 * 60; //1week
     public static final int REMEMBER_ID_EXPIRATION = 30 * 24 * 60 * 60; //30days
     public static final long RESET_PERIOD = 3 * 24 * 60 * 60 * 1000L; //3days
-    public static final String OAUTH2_COOKIE_NAME = "OAUTH2_AUTHORIZATION_REQUEST";
+    public static final String OAUTH2_COOKIE_NAME = "oauth2_authorization_request";
     public static final int OAUTH_COOKIE_EXPIRY = 5 * 60; //5minutes;
 }
