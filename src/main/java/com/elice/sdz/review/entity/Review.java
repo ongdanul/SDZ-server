@@ -1,5 +1,6 @@
 package com.elice.sdz.review.entity;
 
+import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.user.entity.Users;
@@ -19,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "review")
-public class Review {
+public class Review extends BaseEntity {
 
     @Id
     @Column(name = "review_id")
@@ -27,12 +28,12 @@ public class Review {
     private Long reviewId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users userId;
+    @JoinColumn(name = "email", nullable = false)
+    private Users user;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    private Product productId;
+    private Product product;
 
     @Column(name = "rating", nullable = false)
     private int rating;
@@ -40,11 +41,7 @@ public class Review {
     @Column(name = "review_content", length = 1000, nullable = false)
     private String reviewContent;
 
-    @Column(name = "reg_date", nullable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Instant regDate;
-
-    @OneToMany(mappedBy = "reviewId", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Image> images = new ArrayList<>();
 }

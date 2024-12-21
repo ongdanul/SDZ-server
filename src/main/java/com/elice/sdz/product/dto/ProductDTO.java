@@ -14,8 +14,8 @@ public class ProductDTO {
 
 
     private Long productId;
-    //private Long categoryId;
-    //private Long userId;
+    private Long categoryId;
+    private String userId;
     private String productName;
     private int productCount;
     private Double productAmount;

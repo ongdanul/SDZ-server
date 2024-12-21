@@ -1,10 +1,10 @@
 package com.elice.sdz.category.controller;
 
 import com.elice.sdz.category.dto.CategoryRequestDTO;
-import com.elice.sdz.category.entity.Category;
+import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.category.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,36 +13,29 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody CategoryRequestDTO categoryRequestDTO) {
-        Category createdCategory = categoryService.createCategory(categoryRequestDTO.toEntity());
-
-        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+    public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody @Valid CategoryRequestDTO categoryRequestDTO) {
+        return ResponseEntity.ok(categoryService.createCategory(categoryRequestDTO));
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
-
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long categoryId) {
-        Category category = categoryService.getCategoryById(categoryId);
-
-        return ResponseEntity.ok(category);
+    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(categoryService.getCategoryById(categoryId));
     }
 
     @PutMapping("/{categoryId}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long categoryId, @RequestBody CategoryRequestDTO categoryRequestDTO) {
-        Category updatedCategory = categoryService.updateCategory(categoryId, categoryRequestDTO.toEntity());
-
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<CategoryResponseDTO> updateCategory(@PathVariable Long categoryId, @RequestBody @Valid CategoryRequestDTO categoryRequestDTO) {
+        return ResponseEntity.ok(categoryService.updateCategory(categoryId, categoryRequestDTO));
     }
 
     @DeleteMapping("/{categoryId}")
