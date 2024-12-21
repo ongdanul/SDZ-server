@@ -36,6 +36,7 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "허용되지 않는 메소드입니다."),
 
     // 회원 가입 관련 에러
+    DESERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "DESERIALIZATION_FAILED", "OAuth2AuthorizationRequest 역직렬화에 실패하였습니다."),
     OAUTH2_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "OAUTH2_AUTHENTICATION_FAILED", "지원되지 않는 가입유형입니다."),
     SOCIAL_USER_EXISTS(HttpStatus.BAD_REQUEST, "SOCIAL_USER_EXISTS", "해당 소셜 계정으로 이미 가입되어 있습니다."),
     LOCAL_USER_EXISTS(HttpStatus.BAD_REQUEST, "LOCAL_USER_EXISTS", "이미 일반 회원으로 가입되어 있습니다."),

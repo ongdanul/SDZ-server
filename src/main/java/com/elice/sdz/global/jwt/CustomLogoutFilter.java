@@ -1,6 +1,6 @@
 package com.elice.sdz.global.jwt;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.repository.RefreshRepository;
@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Optional;
+
+import static com.elice.sdz.global.util.CookieUtil.getCookieValue;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,11 +42,11 @@ public class CustomLogoutFilter implements Filter {
             throw new CustomException(ErrorCode.METHOD_NOT_ALLOWED);
         }
 
-        String refresh = CookieUtils.getCookieValue(request, "refresh");
-        if (refresh == null) {
+        Optional<String> cookieValue = getCookieValue(request, "refresh");
+        String refresh = cookieValue.orElseThrow(() -> {
             log.warn("로그아웃 진행 중 리프레시 토큰을 찾을 수 없습니다.");
-            throw new CustomException(ErrorCode.INVALID_REFRESH_COOKIE);
-        }
+            return new CustomException(ErrorCode.INVALID_REFRESH_COOKIE);
+        });
 
         try {
             jwtUtil.isExpired(refresh);
@@ -59,7 +62,7 @@ public class CustomLogoutFilter implements Filter {
             }
 
             refreshRepository.deleteByRefresh(refresh);
-            CookieUtils.deleteCookie(response, refresh);
+            CookieUtil.deleteCookie(response, refresh);
             response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (ExpiredJwtException e) {

@@ -1,6 +1,6 @@
 package com.elice.sdz.global.jwt;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.LoginRequest;
@@ -14,7 +14,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -106,13 +105,13 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         resetLoginAttempts(user);
 
-        String access = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, role, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, role, REFRESH_TOKEN_EXPIRATION);
 
         addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
-        CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
+        CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
 
         handleCookie(response, authentication, email, refresh);
@@ -156,13 +155,13 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         if (Boolean.TRUE.equals(rememberId)) {
             String encodedEmail = Base64.getEncoder().encodeToString(email.getBytes(StandardCharsets.UTF_8));
-            CookieUtils.createCookies(response, "remember-id", encodedEmail, REMEMBER_ID_EXPIRATION);
+            CookieUtil.createCookie(response, REMEMBER_ID_COOKIE_NAME, encodedEmail, REMEMBER_ID_EXPIRATION);
         } else {
-            CookieUtils.deleteCookie(response, "remember-id");
+            CookieUtil.deleteCookie(response, REMEMBER_ID_COOKIE_NAME);
         }
 
         if (Boolean.TRUE.equals(rememberMe)) {
-            CookieUtils.createCookies(response, "remember-me", refresh, REMEMBER_ME_EXPIRATION);
+            CookieUtil.createCookie(response, REMEMBER_ME_COOKIE_NAME, refresh, REMEMBER_ME_EXPIRATION);
         }
 
         //TODO 완성후 TEST용 로그 삭제하기

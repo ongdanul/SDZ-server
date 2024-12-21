@@ -1,6 +1,6 @@
 package com.elice.sdz.global.jwt;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomOAuth2User;
@@ -18,9 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 
@@ -48,13 +46,13 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
-        String access = jwtUtil.createJwt("access", email, auth, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", email, auth, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, REFRESH_TOKEN_EXPIRATION);
 
         addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
-        CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
+        CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
         response.sendRedirect(targetUrl);
         log.info("Test - Oauth login success");

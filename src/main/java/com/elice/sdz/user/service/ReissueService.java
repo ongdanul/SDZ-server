@@ -1,6 +1,6 @@
 package com.elice.sdz.user.service;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.global.jwt.JWTUtil;
@@ -24,10 +24,9 @@ public class ReissueService {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     public boolean reissue(HttpServletRequest request, HttpServletResponse response) {
-        String refresh = CookieUtils.getCookieValue(request, "refresh");
+        String refresh = CookieUtil.getCookieValue(request, REFRESH_COOKIE_NAME).orElseGet(null);
 
         if (refresh == null) {
-            CookieUtils.deleteCookie(response,"access");
             return false;
         }
 
@@ -38,16 +37,16 @@ public class ReissueService {
         String email = jwtUtil.getEmail(refresh);
         String auth = jwtUtil.getAuth(refresh);
 
-        String newAccessToken = jwtUtil.createJwt("access", email, auth, ACCESS_TOKEN_EXPIRATION);
-        String newRefreshToken = jwtUtil.createJwt("refresh", email, auth, REFRESH_TOKEN_EXPIRATION);
+        String newAccessToken = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, ACCESS_TOKEN_EXPIRATION);
+        String newRefreshToken = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, REFRESH_TOKEN_EXPIRATION);
 
         refreshRepository.deleteByRefresh(refresh);
         addRefreshToken(email, newRefreshToken);
 
-        CookieUtils.deleteCookies(request, response);
+        CookieUtil.deleteCookie( response, REFRESH_COOKIE_NAME);
 
         response.setHeader("Authorization", "Bearer " + newAccessToken);
-        CookieUtils.createCookies(response,"refresh", newRefreshToken, REFRESH_COOKIE_EXPIRATION);
+        CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, newRefreshToken, REFRESH_COOKIE_EXPIRATION);
 
         return true;
     }
@@ -56,7 +55,7 @@ public class ReissueService {
         try {
             jwtUtil.isExpired(refresh);
 
-            if (!jwtUtil.isValidCategory(refresh, "refresh")) {
+            if (!jwtUtil.isValidCategory(refresh, REFRESH_TOKEN_NAME)) {
                 log.warn("토큰 카테고리가 불일치합니다.: {}", refresh);
                 throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
             }
