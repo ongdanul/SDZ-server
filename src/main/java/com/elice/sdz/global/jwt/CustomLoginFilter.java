@@ -116,7 +116,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         handleCookie(response, authentication, email, refresh);
 
-
         log.info("Test - successfulAuthentication");
     }
 

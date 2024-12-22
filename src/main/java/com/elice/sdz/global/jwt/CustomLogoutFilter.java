@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.elice.sdz.global.config.SecurityConstants.REFRESH_COOKIE_NAME;
+import static com.elice.sdz.global.config.SecurityConstants.REMEMBER_ME_COOKIE_NAME;
 import static com.elice.sdz.global.util.CookieUtil.getCookieValue;
 
 @Slf4j
@@ -62,7 +64,8 @@ public class CustomLogoutFilter implements Filter {
             }
 
             refreshRepository.deleteByRefresh(refresh);
-            CookieUtil.deleteCookie(response, refresh);
+            CookieUtil.deleteCookie(response, REFRESH_COOKIE_NAME);
+            CookieUtil.deleteCookie(response, REMEMBER_ME_COOKIE_NAME);
             response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (ExpiredJwtException e) {
