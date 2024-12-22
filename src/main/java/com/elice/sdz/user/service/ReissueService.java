@@ -24,7 +24,7 @@ public class ReissueService {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     public boolean reissue(HttpServletRequest request, HttpServletResponse response) {
-        String refresh = CookieUtil.getCookieValue(request, REFRESH_COOKIE_NAME).orElseGet(null);
+        String refresh = CookieUtil.getCookieValue(request, REFRESH_COOKIE_NAME).orElse(null);
 
         if (refresh == null) {
             return false;
