@@ -26,7 +26,7 @@ public class Category extends BaseEntity {
     private String categoryName;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
-            orphanRemoval = true, fetch = FetchType.EAGER)
+            orphanRemoval = false, fetch = FetchType.EAGER)
     private List<Product> products = new ArrayList<>();
 
     public Category(String categoryName) {
