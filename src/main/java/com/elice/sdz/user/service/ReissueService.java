@@ -38,9 +38,11 @@ public class ReissueService {
 
         String email = jwtUtil.getEmail(refresh);
         String auth = jwtUtil.getAuth(refresh);
+        String loginType = jwtUtil.getLoginType(refresh);
 
-        String newAccessToken = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, ACCESS_TOKEN_EXPIRATION);
-        String newRefreshToken = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, REFRESH_TOKEN_EXPIRATION);
+
+        String newAccessToken = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, loginType, ACCESS_TOKEN_EXPIRATION);
+        String newRefreshToken = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, loginType, REFRESH_TOKEN_EXPIRATION);
 
         refreshRepository.deleteByRefresh(refresh);
         addRefreshToken(email, newRefreshToken);

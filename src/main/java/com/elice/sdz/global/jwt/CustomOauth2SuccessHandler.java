@@ -46,8 +46,10 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
 
-        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, REFRESH_TOKEN_EXPIRATION);
+        String loginType = "social";
+
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, loginType, ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, loginType, REFRESH_TOKEN_EXPIRATION);
 
         addRefreshToken(email, refresh);
 

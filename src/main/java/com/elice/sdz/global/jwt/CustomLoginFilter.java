@@ -99,14 +99,16 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        String loginType = user.isSocial() ? "social" : "local";
+
         if (isUserLoginLocked(user)) {
             return;
         }
 
         resetLoginAttempts(user);
 
-        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, role, loginType,ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, role, loginType, REFRESH_TOKEN_EXPIRATION);
 
         addRefreshToken(email, refresh);
 
