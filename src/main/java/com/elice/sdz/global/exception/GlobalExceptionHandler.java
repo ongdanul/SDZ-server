@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
     // 모든 예외를 처리하는 기본 핸들러
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception e) {
-        log.error("Global exception occurred {}", e.getMessage());
+        log.error("Global exception occurred {}", e.getMessage(), e);
 
         ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
 
@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     // 커스텀 예외를 처리하는 핸들러
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
-        log.error("Custom exception occurred {}", e.getErrorCode().getMessage());
+        log.error("Custom exception occurred {}", e.getErrorCode().getMessage(), e);
 
         ErrorResponse errorResponse = ErrorResponse.of(e.getErrorCode());
 
