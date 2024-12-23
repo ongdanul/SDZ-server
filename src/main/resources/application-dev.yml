@@ -10,3 +10,7 @@ spring:
     show-sql: true             # SQL 출력 여부
     hibernate:
       ddl-auto: update         # 테이블 구조를 자동 업데이트
+
+logging:
+  level:
+    root: INFO
