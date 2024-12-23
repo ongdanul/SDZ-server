@@ -4,6 +4,7 @@ import com.elice.sdz.user.controller.apiDocs.VerificationApiDocs;
 import com.elice.sdz.user.service.UserService;
 import com.elice.sdz.user.service.VerificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/check")
@@ -75,7 +77,6 @@ public class VerificationController implements VerificationApiDocs {
 
     @PostMapping("/password")
     public ResponseEntity<Map<String, Boolean>> checkPassword(@RequestBody Map<String, String> requestBody) {
-
         String email = requestBody.get("email");
         String inputPassword = requestBody.get("userPassword");
         boolean valid = verificationService.checkPassword(email, inputPassword);

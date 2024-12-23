@@ -1,6 +1,6 @@
     package com.elice.sdz.user.service;
 
-    import com.elice.sdz.global.config.CookieUtils;
+    import com.elice.sdz.global.util.CookieUtil;
     import com.elice.sdz.global.exception.CustomException;
     import com.elice.sdz.global.exception.ErrorCode;
     import com.elice.sdz.user.dto.UpdateLocalDTO;
@@ -19,6 +19,8 @@
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.util.StringUtils;
+
+    import static com.elice.sdz.global.config.SecurityConstants.REFRESH_COOKIE_NAME;
 
     @Slf4j
     @Service
@@ -120,6 +122,6 @@
                 log.error("회원 {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", email, e);
                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
-            CookieUtils.deleteCookie(response, "refresh");
+            CookieUtil.deleteCookie(response, REFRESH_COOKIE_NAME);
         }
     }

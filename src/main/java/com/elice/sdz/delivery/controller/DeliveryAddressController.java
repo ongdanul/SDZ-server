@@ -32,15 +32,12 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
         return ResponseEntity.ok(response);
     }
     @PostMapping
-    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
     public ResponseEntity<Void> createNewAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
-        deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());
         deliveryAddressService.createNewAddress(deliveryAddressDTO);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PutMapping("/{deliveryAddressId}")
-    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
     public ResponseEntity<String> updateAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DeliveryAddressDTO deliveryAddressDTO) {
         deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());
         deliveryAddressService.updateAddress(deliveryAddressId, deliveryAddressDTO);
@@ -48,7 +45,6 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
     }
 
     @PutMapping("/{deliveryAddressId}/default")
-    @PreAuthorize("#deliveryAddressDTO.email == authentication.name")
     public ResponseEntity<String> updateDefaultAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DefaultCheckDTO defaultCheckDTO) {
         defaultCheckDTO.setEmail(authenticationService.getCurrentUser());
         deliveryAddressService.updateDefaultCheck(deliveryAddressId, defaultCheckDTO);
@@ -56,7 +52,6 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
     }
 
     @DeleteMapping("/{deliveryAddressId}")
-    @PreAuthorize("#email == authentication.name")
     public ResponseEntity<Void> deleteAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId) {
         String email = authenticationService.getCurrentUser();
         deliveryAddressService.deleteAddress(deliveryAddressId, email);

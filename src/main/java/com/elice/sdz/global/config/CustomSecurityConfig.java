@@ -1,6 +1,7 @@
 package com.elice.sdz.global.config;
 
 import com.elice.sdz.global.jwt.*;
+import com.elice.sdz.user.repository.HttpCookieOAuth2AuthorizedClientRepository;
 import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
 import com.elice.sdz.user.service.CustomOAuth2UserService;
@@ -33,14 +34,26 @@ public class CustomSecurityConfig {
 
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
-    private final ReissueService reissueService;
     private final RefreshRepository refreshRepository;
     private final AuthenticationConfiguration configuration;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final HttpCookieOAuth2AuthorizedClientRepository httpCookieOAuth2AuthorizedClientRepository;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOauth2SuccessHandler customOauth2SuccessHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+    private static final String[] SWAGGER = {
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+    };
+
+    private static final String[] WHITE_LIST = {
+            "/",
+            "/api/account/**",
+            "/api/user/sign-up",
+            "/api/check/**",
+            "/oauth2/**",
+    };
 
     @Bean
     public BCryptPasswordEncoder cryptPasswordEncoder() {
@@ -63,23 +76,22 @@ public class CustomSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         //CORS
-        /*http.cors(cors -> cors.configurationSource(request -> {
+        http.cors(cors -> cors.configurationSource(request -> {
             var config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:5174"));
+            config.setAllowedOrigins(List.of("http://localhost:5173"));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
             config.setExposedHeaders(List.of("Authorization"));
             return config;
-        }));*/
+        }));
 
         //접근 권한 설정
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/account/**", "/api/user/sign-up", "/api/check/**", "/oauth2/**").permitAll()
+                        .requestMatchers(SWAGGER).permitAll()
+                        .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
-                        .requestMatchers("/").permitAll()
                         .anyRequest().authenticated())
                 //LoginFilter 추가
                 .addFilterBefore(new JWTFilter(jwtUtil), CustomLoginFilter.class)
@@ -91,6 +103,7 @@ public class CustomSecurityConfig {
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class)
                 //소셜 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(config-> config.authorizationRequestRepository(httpCookieOAuth2AuthorizedClientRepository))
                         .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
                         .successHandler(customOauth2SuccessHandler)
