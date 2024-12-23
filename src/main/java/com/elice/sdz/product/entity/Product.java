@@ -67,6 +67,7 @@ public class Product extends BaseEntity {
                 .productId(productId)
                 .productName(productName)
                 .userName(user.getUserName())  // 사용자 이름
+                .categoryId(category.getCategoryId())
                 .categoryName(category.getCategoryName())
                 .productCount(this.productCount)
                 .productAmount(this.productAmount)
