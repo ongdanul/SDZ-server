@@ -5,13 +5,13 @@ import com.elice.sdz.inquiry.entity.Inquiry;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.review.entity.Review;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

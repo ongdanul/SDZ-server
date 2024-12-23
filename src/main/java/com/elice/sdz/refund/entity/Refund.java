@@ -4,14 +4,14 @@ import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.payment.entity.Payment;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.time.Instant;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @DynamicInsert
 @NoArgsConstructor

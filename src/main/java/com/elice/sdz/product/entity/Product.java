@@ -4,18 +4,20 @@ import com.elice.sdz.category.entity.Category;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.inquiry.entity.Inquiry;
+import com.elice.sdz.orderItem.entity.OrderItem;
+import com.elice.sdz.orderItem.entity.OrderItemDetail;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.review.entity.Review;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +29,7 @@ public class Product extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
@@ -47,17 +49,18 @@ public class Product extends BaseEntity {
     @Column(name = "product_content", length = 3000, nullable = false)
     private String productContent;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private final List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private final List<Review> reviews  = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private final List<Inquiry> inquiries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)//, orphanRemoval = true
+    private final List<OrderItemDetail> orderItemDetails = new ArrayList<>();
+
 
     public ProductResponseDTO toResponseDTO() {
         return ProductResponseDTO.builder()

@@ -4,17 +4,14 @@ import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.product.entity.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "category")
