@@ -2,12 +2,12 @@ package com.elice.sdz.order.entity;
 
 import com.elice.sdz.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import jakarta.persistence.Id;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
