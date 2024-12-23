@@ -77,7 +77,6 @@ public class OrderItemService {
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
                 .findByOrderItemIdAndProduct(orderItem.getId(), addProduct);
 
-        int currentQuantity = optionalOrderItemDetail.map(OrderItemDetail::getQuantity).orElse(0);
         if (addProduct.getProductCount() - quantity < 0) {
             throw new CustomException(ErrorCode.OUT_OF_STOCK); // 재고 초과 시 예외 발생
         }
