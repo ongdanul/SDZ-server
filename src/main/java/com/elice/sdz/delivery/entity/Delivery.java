@@ -3,13 +3,13 @@ package com.elice.sdz.delivery.entity;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

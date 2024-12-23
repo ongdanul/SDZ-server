@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -94,13 +96,13 @@ public class ProductService {
         return productRepository.save(product).toResponseDTO();
     }
 
-    // Product 삭제
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-
         productRepository.delete(product);
     }
+
+
 
     // 특정 카테고리의 Product 조회
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {

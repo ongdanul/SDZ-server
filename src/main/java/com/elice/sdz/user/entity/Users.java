@@ -7,17 +7,16 @@ import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.review.entity.Review;
 import com.elice.sdz.user.dto.SignUpDTO;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @Builder
 @NoArgsConstructor
