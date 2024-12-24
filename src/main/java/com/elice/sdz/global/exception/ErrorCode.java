@@ -48,6 +48,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "회원이 존재하지 않습니다."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "잘못된 회원 아이디 또는 비밀번호입니다."),
     SIGN_UP_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "SIGN_UP_LIMIT_EXCEEDED", "회원이 가입 할 수 있는 최대 계정 수를 초과하였습니다."),
+    ADMIN_USER_EXISTS(HttpStatus.CONFLICT , "ADMIN_USER_EXISTS", "마지막 관리자 계정은 삭제할 수 없습니다."),
 
     // 검색 관련 에러
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "INVALID_TYPE", "지원하지 않는 검색 조건입니다."),
@@ -58,6 +59,7 @@ public enum ErrorCode {
 
     // 배송지 관련 에러
     DELIVERY_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY_ADDRESS_NOT_FOUND", "배송지 정보가 존재하지 않습니다."),
+    MAX_DELIVERY_ADDRESSES(HttpStatus.CONFLICT, "MAX_DELIVERY_ADDRESSES", "배송지 주소는 최대 10개까지만 등록할 수 있습니다."),
 
     // 결제 관련 에러
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_FAILED", "결제 처리에 실패했습니다."),

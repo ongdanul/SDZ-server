@@ -17,4 +17,6 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
     Optional<DeliveryAddress> findByDeliveryAddressId(Long deliveryAddressId);
 
     List<DeliveryAddress> findAllByUser(Users user);
+
+    long countByUser(Users user);
 }

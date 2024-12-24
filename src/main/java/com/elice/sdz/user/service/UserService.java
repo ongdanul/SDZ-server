@@ -115,6 +115,10 @@
                 socialRepository.deleteByUser(user);
             }
 
+            if(user.getUserAuth().equals(Users.Auth.ROLE_ADMIN) && userRepository.countByRoleAdmin()<=1) {
+                throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
+            }
+
             userRepository.delete(user);
             try {
                 refreshRepository.deleteAllByEmail(email);

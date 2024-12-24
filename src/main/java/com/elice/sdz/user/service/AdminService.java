@@ -105,6 +105,10 @@ public class AdminService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        if(user.getUserAuth().equals(Users.Auth.ROLE_ADMIN) && userRepository.countByRoleAdmin()<=1) {
+            throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
+        }
+
         userRepository.delete(user);
     }
 
@@ -117,6 +121,16 @@ public class AdminService {
         List<Users> users = userRepository.findAllById(emails);
         if (users.size() != emails.size()) {
             throw new CustomException(ErrorCode.USER_IDS_NOT_EXIST);
+        }
+
+        long adminCountInDeleteList = users.stream()
+                .filter(user -> user.getUserAuth().equals(Users.Auth.ROLE_ADMIN))
+                .count();
+
+        long totalAdminCount = userRepository.countByRoleAdmin();
+
+        if (adminCountInDeleteList > 0 && totalAdminCount - adminCountInDeleteList <= 1) {
+            throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
         }
 
         userRepository.deleteAllByEmailIn(emails);
