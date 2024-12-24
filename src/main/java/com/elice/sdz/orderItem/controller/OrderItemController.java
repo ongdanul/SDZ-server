@@ -6,6 +6,7 @@ import com.elice.sdz.orderItem.dto.OrderItemModifyDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.elice.sdz.user.service.AuthenticationService;
 
 @RestController
 @RequestMapping("/api/order-item")
@@ -14,17 +15,20 @@ import org.springframework.web.bind.annotation.*;
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
+    private final AuthenticationService authenticationService;
 
     // 장바구니 조회
-    @GetMapping("/{userId}")
-    public ResponseEntity<OrderItemDTO> getOrderItems(@PathVariable String userId) {
+    @GetMapping
+    public ResponseEntity<OrderItemDTO> getOrderItems() {
+        String userId = authenticationService.getCurrentUser();
         OrderItemDTO orderItems = orderItemService.getOrderItems(userId);
         return ResponseEntity.ok(orderItems);
     }
 
     // 장바구니 수정
-    @PostMapping("/modify/{userId}")
-    public ResponseEntity<Void> modifyOrderItem(@PathVariable String userId, @RequestBody OrderItemModifyDTO request) {
+    @PostMapping("/modify")
+    public ResponseEntity<Void> modifyOrderItem(@RequestBody OrderItemModifyDTO request) {
+        String userId = authenticationService.getCurrentUser();
         if (request.getQuantity() > 0) {
             // 추가
             orderItemService.addOrderItem(userId, request.getProductId(), request.getQuantity());
@@ -36,8 +40,9 @@ public class OrderItemController {
     }
 
     // 장바구니 전체 삭제
-    @DeleteMapping("/clear/{userId}")
-    public ResponseEntity<Void> clearOrderItems(@PathVariable String userId) {
+    @DeleteMapping("/clear")
+    public ResponseEntity<Void> clearOrderItems() {
+        String userId = authenticationService.getCurrentUser();
         orderItemService.clearOrderItems(userId);
         return ResponseEntity.ok().build();
     }
