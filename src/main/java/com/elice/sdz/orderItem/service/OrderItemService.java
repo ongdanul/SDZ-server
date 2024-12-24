@@ -61,6 +61,7 @@ public class OrderItemService {
                     detailDTO.setProductName(detail.getProduct().getProductName());
                     detailDTO.setQuantity(detail.getQuantity());
                     detailDTO.setProductAmount(detail.getProductAmount());
+                    detailDTO.setThumbnailPath(detail.getProduct().getThumbnailPath());
                     return detailDTO;
                 }).collect(Collectors.toList());
 
