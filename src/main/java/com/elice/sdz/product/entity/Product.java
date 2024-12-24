@@ -49,6 +49,9 @@ public class Product extends BaseEntity {
     @Column(name = "product_content", length = 3000, nullable = false)
     private String productContent;
 
+    @Column(name = "thumbnail_path") // 썸네일 경로 필드
+    private String thumbnailPath;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private final List<Image> images = new ArrayList<>();
 
@@ -72,6 +75,7 @@ public class Product extends BaseEntity {
                 .productCount(this.productCount)
                 .productAmount(this.productAmount)
                 .productContent(this.productContent)
+                .thumbnailPath(thumbnailPath)
                 .build();
     }
 

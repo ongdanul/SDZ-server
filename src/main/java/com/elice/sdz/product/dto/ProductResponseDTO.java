@@ -15,4 +15,5 @@ public class ProductResponseDTO {
     private int productCount;
     private Double productAmount;
     private String productContent;
+    private String thumbnailPath;
 }

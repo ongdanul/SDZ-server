@@ -90,7 +90,7 @@ public class CustomSecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER).permitAll()
                         .requestMatchers(WHITE_LIST).permitAll()
-                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()
+                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**", "/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
                         .anyRequest().authenticated())
                 //LoginFilter 추가
