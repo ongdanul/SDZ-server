@@ -32,4 +32,6 @@ public interface UserRepository extends JpaRepository<Users, String> {
     Page<Users> findByEmailContainingAndSocialTrue(String email, Pageable pageable);
     Page<Users> findByEmailContainingAndSocialFalse(String email, Pageable pageable);
     void deleteAllByEmailIn(List<String> emails);
+    @Query("SELECT COUNT(u) FROM Users u WHERE u.userAuth = 'ROLE_ADMIN'")
+    long countByRoleAdmin();
 }

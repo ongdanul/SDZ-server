@@ -58,6 +58,11 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(deliveryAddressDTO.getEmail())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        long addressCount = deliveryAddressRepository.countByUser(user);
+        if (addressCount > 10) {
+            throw new CustomException(ErrorCode.MAX_DELIVERY_ADDRESSES);
+        }
+
         DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
         try {
             deliveryAddressRepository.save(deliveryAddress);
