@@ -43,8 +43,8 @@ public class AdminService {
     }
 
     private Page<Users> searchWithFilters(PageRequestDTO pageRequestDTO, Pageable pageable) {
-        String keyword = pageRequestDTO.getKeyword().trim();
-        String type = pageRequestDTO.getType().trim();
+        String keyword = pageRequestDTO.getKeyword() != null ? pageRequestDTO.getKeyword().trim() : "";
+        String type = pageRequestDTO.getType() != null ? pageRequestDTO.getType().trim() : "all";
 
         if (keyword.isEmpty()) {
             return getUserListByType(type, pageable);
