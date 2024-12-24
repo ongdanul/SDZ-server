@@ -14,13 +14,11 @@ import org.springframework.data.domain.Pageable;
 @AllArgsConstructor
 public class PageRequestDTO {
 
-    @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
-    private int page = 1;
+    private int page;
 
-    @Builder.Default
     @Schema(description = "페이지 크기", example = "10")
-    private int size = 10;
+    private int size;
 
     @Schema(description = "검색 타입", example = "all")
     private String type;
