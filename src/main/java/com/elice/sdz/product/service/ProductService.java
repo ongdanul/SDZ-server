@@ -12,6 +12,7 @@ import com.elice.sdz.product.repository.ProductRepository;
 
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,8 @@ public class ProductService {
     private final ImageService imageService;
 
     // Product 생성
-    public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images) {
+    public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images, MultipartFile thumbnail)
+            throws IOException {
         // Category와 User를 ID로 받아와 조회
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -50,11 +52,19 @@ public class ProductService {
                 productDTO.getProductName(),
                 productDTO.getProductCount(),
                 productDTO.getProductAmount(),
-                productDTO.getProductContent()
+                productDTO.getProductContent(),
+                null
         );
 
         product = productRepository.save(product);
+
         imageService.uploadImage(product, images);
+
+        if (thumbnail != null) {
+            String thumbnailPath = imageService.saveImage(thumbnail, "src/main/resources/static/uploads/");
+            product.setThumbnailPath(thumbnailPath); // 썸네일 경로 설정
+            productRepository.save(product); // 업데이트된 product 저장
+        }
         return product.toResponseDTO();
     }
 

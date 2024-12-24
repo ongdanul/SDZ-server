@@ -43,7 +43,8 @@ public class ProductController {
     // 상품 생성
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(@RequestPart("productDTO") @Valid String productDTOJson,
-                                                            @RequestPart("images") List<MultipartFile> images) {
+                                                            @RequestPart("images") List<MultipartFile> images,
+                                                            @RequestPart("thumbnail") MultipartFile thumbnail) {
 
         try {
             // JSON 문자열을 ProductDTO 객체로 변환
@@ -51,7 +52,7 @@ public class ProductController {
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
 
             // 서비스 호출
-            ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images);
+            ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images, thumbnail);
             return new ResponseEntity<>(productResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

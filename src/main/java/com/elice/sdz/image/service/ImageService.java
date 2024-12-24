@@ -23,12 +23,6 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
 
-    // 상품 조회 메서드
-    private Product findByProductId(Long id){
-        return productRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
     public void uploadImage(Product product, List<MultipartFile> images) {
         String uploadsDir = "src/main/resources/static/uploads/";
         for (MultipartFile image : images) {
@@ -37,17 +31,16 @@ public class ImageService {
                 // 이미지 파일 경로를 저장
                 String dbFilePath = saveImage(image, uploadsDir);
 
-                // ProductThumbnail 엔티티 생성 및 저장
+                // image 엔티티 생성 및 저장
                 Image newImage = new Image(product, dbFilePath);
                 imageRepository.save(newImage);
             } catch (IOException e) {
-            // 파일 저장 중 오류가 발생한 경우 처리
             throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }
     }
 
-    private String saveImage(MultipartFile image, String uploadsDir) throws IOException {
+    public String saveImage(MultipartFile image, String uploadsDir) throws IOException {
         // 파일 이름 생성
         String fileName = UUID.randomUUID().toString().replace("-", "") + "_" + image.getOriginalFilename();
         // 실제 파일이 저장될 경로
