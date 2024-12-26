@@ -117,9 +117,17 @@ public class OrderItemService {
         if (optionalOrderItemDetail.isPresent()) {
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();
 
-            orderItemDetail.setQuantity(orderItemDetail.getQuantity() - quantity);
-            orderItemDetailRepository.save(orderItemDetail);
-        }
+            // 수량 감소 처리
+            int updatedQuantity = orderItemDetail.getQuantity() - quantity;
+            if (updatedQuantity <= 0) {
+                // 수량이 0 이하일 경우 해당 항목 삭제
+                orderItemDetailRepository.delete(orderItemDetail);
+                orderItem.getOrderItemDetails().remove(orderItemDetail);
+            } else {
+                // 수량이 남아 있을 경우 업데이트
+                orderItemDetail.setQuantity(updatedQuantity);
+                orderItemDetailRepository.save(orderItemDetail);
+            }
 
             deleteProduct.setProductCount(deleteProduct.getProductCount() + quantity);
             productRepository.save(deleteProduct);
@@ -127,6 +135,7 @@ public class OrderItemService {
             orderItem.updateTimestamp();
             orderItemRepository.save(orderItem);
         }
+    }
 
 
     // 장바구니 전체 삭제
