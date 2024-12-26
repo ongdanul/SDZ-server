@@ -10,4 +10,6 @@ public class CategoryResponseDTO {
     private Long categoryId;
 
     private String categoryName;
+
+    private Long parentId;
 }

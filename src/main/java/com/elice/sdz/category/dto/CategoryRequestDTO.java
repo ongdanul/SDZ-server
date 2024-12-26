@@ -14,8 +14,13 @@ public class CategoryRequestDTO {
     @Size(min = 1, max = 10)
     private String categoryName;
 
+    private Long parentId;
+
     public Category toEntity() {
-        return new Category(this.categoryName);
+        return Category.builder()
+                .categoryName(categoryName)
+                .parentId(parentId)
+                .build();
     }
 
 }
