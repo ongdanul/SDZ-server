@@ -57,7 +57,6 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
         response.sendRedirect(targetUrl);
-        log.info("Test - Oauth login success");
     }
 
     private void addRefreshToken(String email, String refresh) {

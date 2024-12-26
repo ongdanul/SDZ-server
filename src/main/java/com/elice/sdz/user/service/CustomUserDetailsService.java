@@ -25,8 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                     log.error("회원이 존재하지 않습니다.: {}", email);
                     return new UsernameNotFoundException("회원이 존재하지 않습니다.");
                 });
-        log.info("Test - CustomUserDetailsService : email: {}", email);
-        log.info("Test - CustomUserDetailsService : email: {}, userPassword: {}", user.getEmail(), user.getUserPassword());
 
         return new CustomUserDetails(user);
     }

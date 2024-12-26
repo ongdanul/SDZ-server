@@ -48,8 +48,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws
             AuthenticationException {
-        //TODO 로그인 기능 완성후 TEST용 로그 삭제하기
-        log.info("Test - LoginFilter is being called"); //Test
 
         ObjectMapper objectMapper = new ObjectMapper();
         LoginRequest loginRequest = null;
@@ -67,13 +65,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String password = loginRequest.getPassword();
         boolean rememberId = loginRequest.isRememberId();
         boolean rememberMe = loginRequest.isRememberMe();
-
-        log.info("Attempting authentication - email: {}, password: {}", email, password);
-
-        String rememberIdString = Boolean.toString(rememberId); //Test
-        String rememberMeString = Boolean.toString(rememberMe); //Test
-
-        log.info("Test - rememberId: {}, rememberMe: {}", rememberIdString, rememberMeString); //Test
 
         Map<String, Boolean> loginDetails = new HashMap<>();
         loginDetails.put("rememberId", rememberId);
@@ -117,8 +108,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpStatus.OK.value());
 
         handleCookie(response, authentication, email, refresh);
-
-        log.info("Test - successfulAuthentication");
     }
 
     @Override
@@ -164,10 +153,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         if (Boolean.TRUE.equals(rememberMe)) {
             CookieUtil.createCookie(response, REMEMBER_ME_COOKIE_NAME, refresh, REMEMBER_ME_EXPIRATION);
         }
-
-        //TODO 완성후 TEST용 로그 삭제하기
-        log.info("Test - Remember ID cookie processed: {}", rememberId);
-        log.info("Test - remember Me cookie processed: {}", rememberMe);
     }
 
     private void addRefreshToken(String email, String refresh) {

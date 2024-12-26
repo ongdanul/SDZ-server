@@ -25,7 +25,7 @@ public class AdminService {
     private final UserRepository userRepository;
 
     public PageResponseDTO<UserListDTO> searchUserList(PageRequestDTO pageRequestDTO) {
-        Pageable pageable = pageRequestDTO.getPageable();
+        Pageable pageable = pageRequestDTO.getPageable("createdAt");
 
         Page<Users> result = searchWithFilters(pageRequestDTO, pageable);
 

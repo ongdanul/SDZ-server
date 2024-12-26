@@ -51,7 +51,6 @@ public class UserController implements UserApiDocs {
     @GetMapping("/my-page")
     public ResponseEntity<UserDetailDTO> userDetail(){
         String email = authenticationService.getCurrentUser();
-        log.info(email);
         UserDetailDTO userDetailDTO = userService.findUserInfo(email);
         return ResponseEntity.ok(userDetailDTO);
     }
