@@ -77,7 +77,9 @@ public enum ErrorCode {
     ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_ITEM_NOT_FOUND", "장바구니가 존재하지 않습니다."),
 
     // 이미지 관련 에러
-    IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다.");
+    IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다."),
+    THUMBNAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "THUMBNAIL_NOT_FOUND", "썸네일을 찾을 수 없습니다."),
+    IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_DELETE_FAILED", "이미지 삭제에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;

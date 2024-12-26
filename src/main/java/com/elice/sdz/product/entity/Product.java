@@ -66,6 +66,10 @@ public class Product extends BaseEntity {
 
 
     public ProductResponseDTO toResponseDTO() {
+        List<String> imagePaths = images.stream()
+                .map(Image::getImagePath) // Image 엔티티의 경로 가져오기
+                .toList();
+
         return ProductResponseDTO.builder()
                 .productId(productId)
                 .productName(productName)
@@ -76,6 +80,7 @@ public class Product extends BaseEntity {
                 .productAmount(this.productAmount)
                 .productContent(this.productContent)
                 .thumbnailPath(thumbnailPath)
+                .imagePaths(imagePaths)
                 .build();
     }
 
