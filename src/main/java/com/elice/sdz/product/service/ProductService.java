@@ -4,6 +4,7 @@ import com.elice.sdz.category.entity.Category;
 import com.elice.sdz.category.repository.CategoryRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
+import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.image.service.ImageService;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
+    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -58,13 +60,12 @@ public class ProductService {
 
         product = productRepository.save(product);
 
-        imageService.uploadImage(product, images);
+        // 이미지 업로드 및 썸네일 경로 설정
+        String thumbnailPath = imageService.uploadImage(product, images, thumbnail);
+        product.setThumbnailPath(thumbnailPath);
 
-        if (thumbnail != null) {
-            String thumbnailPath = imageService.saveImage(thumbnail, "src/main/resources/static/uploads/");
-            product.setThumbnailPath(thumbnailPath); // 썸네일 경로 설정
-            productRepository.save(product); // 업데이트된 product 저장
-        }
+        productRepository.save(product); // 업데이트된 product 저장
+
         return product.toResponseDTO();
     }
 
@@ -72,7 +73,6 @@ public class ProductService {
     public ProductResponseDTO getProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-
         return product.toResponseDTO();
     }
 
@@ -86,29 +86,69 @@ public class ProductService {
     }
 
     // Product 수정
-    public ProductResponseDTO updateProduct(Long productId, ProductDTO productDTO) {
+    @Transactional
+    public ProductResponseDTO updateProduct(
+            Long productId,
+            ProductDTO productDTO,
+            List<MultipartFile> newImages,
+            List<String> deletedImagePaths,
+            String newThumbnail) throws IOException {
+
+        // 1. 상품 조회
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-
-        Users user = userRepository.findById(productDTO.getUserId())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        product.setCategory(category);
-        product.setUser(user);
+        // 2. 상품 정보 업데이트
         product.setProductName(productDTO.getProductName());
-        product.setProductCount(productDTO.getProductCount());
         product.setProductAmount(productDTO.getProductAmount());
+        product.setProductCount(productDTO.getProductCount());
         product.setProductContent(productDTO.getProductContent());
 
+        // 3. 삭제할 이미지 처리
+        if (deletedImagePaths != null) {
+            List<Image> imagesToDelete = product.getImages().stream()
+                    .filter(image -> deletedImagePaths.contains(image.getImagePath()))
+                    .collect(Collectors.toList());
+            for (Image image : imagesToDelete) {
+                imageService.deleteImage(image); // 로컬 파일 및 DB에서 삭제
+                product.getImages().remove(image); // Product 엔티티에서 이미지 삭제
+            }
+        }
+
+        // 4. 썸네일 변경 처리
+        if (newThumbnail != null) {
+            product.setThumbnailPath(newThumbnail); // 새로운 썸네일 경로 설정
+        }
+
+        // 5. 새로운 이미지 추가
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile newImage : newImages) {
+                String imagePath = imageService.saveImage(newImage, UPLOAD_DIR);
+                Image imageEntity = new Image(product, imagePath);
+                product.getImages().add(imageEntity);
+            }
+        }
+
+        // 6. 저장 및 반환
         return productRepository.save(product).toResponseDTO();
     }
 
+
+
+
+    @Transactional
     public void deleteProduct(Long productId) {
+        // 1. 상품 조회
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // 2. 관련 이미지 삭제
+        List<Image> images = product.getImages(); // 상품과 연관된 이미지 목록
+        for (Image image : images) {
+            imageService.deleteImage(image); // 로컬 파일 및 DB에서 이미지 삭제
+        }
+
+        // 3. 상품 삭제
         productRepository.delete(product);
     }
 
