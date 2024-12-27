@@ -6,6 +6,8 @@ import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.image.service.ImageService;
+import com.elice.sdz.orderItem.entity.OrderItemDetail;
+import com.elice.sdz.orderItem.repository.OrderItemDetailRepository;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
@@ -35,6 +37,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ImageService imageService;
+    private final OrderItemDetailRepository orderItemDetailRepository;
 
     // Product 생성
     public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images, MultipartFile thumbnail)
@@ -133,7 +136,10 @@ public class ProductService {
             }
         }
 
-        // 6. 저장 및 반환
+        // 6. 해당 상품을 담고있는 장바구니의 가격 정보 업데이트
+        updateOrderItemDetails(product);
+
+        // 7. 저장 및 반환
         return productRepository.save(product).toResponseDTO();
     }
 
@@ -157,7 +163,6 @@ public class ProductService {
     }
 
 
-
     // 특정 카테고리의 Product 조회
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
@@ -174,6 +179,13 @@ public class ProductService {
         return productResponseDTOList;
     }
 
+    // 장바구니 아이템의 가격 업데이트
+    private void updateOrderItemDetails(Product product) {
+        List<OrderItemDetail> orderItemDetails = orderItemDetailRepository.findByProduct(product);
 
-
+        for (OrderItemDetail detail : orderItemDetails) {
+            detail.setProductAmount(product.getProductAmount()); // 상품 가격 업데이트
+            orderItemDetailRepository.save(detail); // 변경 사항 저장
+        }
+    }
 }

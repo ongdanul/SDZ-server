@@ -93,6 +93,7 @@ public class OrderItemService {
             orderItemDetail.setOrderItem(orderItem);
             orderItemDetail.setProduct(addProduct);
             orderItemDetail.setQuantity(quantity);
+            orderItemDetail.setProductAmount(addProduct.getProductAmount());
             orderItemDetailRepository.save(orderItemDetail);
         }
 
