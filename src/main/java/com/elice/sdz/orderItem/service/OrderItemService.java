@@ -97,10 +97,6 @@ public class OrderItemService {
             orderItemDetailRepository.save(orderItemDetail);
         }
 
-        // Product 재고 수량 감소
-        addProduct.setProductCount(addProduct.getProductCount() - quantity);
-        productRepository.save(addProduct);
-
         orderItem.updateTimestamp();
         orderItemRepository.save(orderItem);
     }
@@ -130,9 +126,6 @@ public class OrderItemService {
                 orderItemDetailRepository.save(orderItemDetail);
             }
 
-            deleteProduct.setProductCount(deleteProduct.getProductCount() + quantity);
-            productRepository.save(deleteProduct);
-
             orderItem.updateTimestamp();
             orderItemRepository.save(orderItem);
         }
@@ -144,14 +137,6 @@ public class OrderItemService {
     public void clearOrderItems(String userId) {
         OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
-//        orderItemRepository.delete(orderItem);
-
-        // Product 재고 수량 복원
-        for (OrderItemDetail detail : orderItem.getOrderItemDetails()) {
-            Product product = detail.getProduct();
-            product.setProductCount(product.getProductCount() + detail.getQuantity());
-            productRepository.save(product);
-        }
 
         orderItem.getOrderItemDetails().clear();
         orderItem.updateTimestamp();
