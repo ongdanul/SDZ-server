@@ -98,11 +98,15 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
         // 2. 상품 정보 업데이트
         product.setProductName(productDTO.getProductName());
         product.setProductAmount(productDTO.getProductAmount());
         product.setProductCount(productDTO.getProductCount());
         product.setProductContent(productDTO.getProductContent());
+        product.setCategory(category);
 
         // 3. 삭제할 이미지 처리
         if (deletedImagePaths != null) {
