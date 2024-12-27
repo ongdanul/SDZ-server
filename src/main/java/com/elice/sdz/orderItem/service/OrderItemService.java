@@ -78,7 +78,9 @@ public class OrderItemService {
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
                 .findByOrderItemIdAndProduct(orderItem.getId(), addProduct);
 
-        if (addProduct.getProductCount() - quantity < 0) {
+        int currentQuantity = optionalOrderItemDetail.map(OrderItemDetail::getQuantity).orElse(0); // 기존 수량
+
+        if (addProduct.getProductCount() < currentQuantity + quantity) {
             throw new CustomException(ErrorCode.OUT_OF_STOCK); // 재고 초과 시 예외 발생
         }
 
@@ -96,10 +98,6 @@ public class OrderItemService {
             orderItemDetail.setProductAmount(addProduct.getProductAmount());
             orderItemDetailRepository.save(orderItemDetail);
         }
-
-        // Product 재고 수량 감소
-        addProduct.setProductCount(addProduct.getProductCount() - quantity);
-        productRepository.save(addProduct);
 
         orderItem.updateTimestamp();
         orderItemRepository.save(orderItem);
@@ -130,9 +128,6 @@ public class OrderItemService {
                 orderItemDetailRepository.save(orderItemDetail);
             }
 
-            deleteProduct.setProductCount(deleteProduct.getProductCount() + quantity);
-            productRepository.save(deleteProduct);
-
             orderItem.updateTimestamp();
             orderItemRepository.save(orderItem);
         }
@@ -144,14 +139,6 @@ public class OrderItemService {
     public void clearOrderItems(String userId) {
         OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
-//        orderItemRepository.delete(orderItem);
-
-        // Product 재고 수량 복원
-        for (OrderItemDetail detail : orderItem.getOrderItemDetails()) {
-            Product product = detail.getProduct();
-            product.setProductCount(product.getProductCount() + detail.getQuantity());
-            productRepository.save(product);
-        }
 
         orderItem.getOrderItemDetails().clear();
         orderItem.updateTimestamp();
