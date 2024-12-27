@@ -5,22 +5,30 @@ import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.category.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
-@CrossOrigin(origins = "http://localhost:5173")
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @PostMapping
     public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody @Valid CategoryRequestDTO categoryRequestDTO) {
-        return ResponseEntity.ok(categoryService.createCategory(categoryRequestDTO));
+        log.info("parentId = {}", categoryRequestDTO.getParentId());
+
+        if (categoryRequestDTO.getParentId() == null) {
+            return ResponseEntity.ok(categoryService.createCategory(categoryRequestDTO));
+        } else {
+            return ResponseEntity.ok(categoryService.createChildCategory(categoryRequestDTO));
+        }
+
     }
 
     @GetMapping

@@ -11,6 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,18 +26,18 @@ public class Category extends BaseEntity {
     @Column(name = "category_name", length = 10, nullable = false)
     private String categoryName;
 
+    @Column(name = "parent_id", nullable = true)
+    private Long parentId;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
             orphanRemoval = false, fetch = FetchType.EAGER)
     private List<Product> products = new ArrayList<>();
-
-    public Category(String categoryName) {
-        this.categoryName = categoryName;
-    }
 
     public CategoryResponseDTO toResponseDTO() {
         return CategoryResponseDTO.builder()
                 .categoryId(categoryId)
                 .categoryName(categoryName)
+                .parentId(parentId)
                 .build();
     }
 }
