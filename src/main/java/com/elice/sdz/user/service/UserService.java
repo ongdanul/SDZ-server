@@ -94,9 +94,9 @@
         }
 
         //TODO : 첨부파일 기능 완성 이후에 프로필 사진 변경 기능 연결 할 것.
-    //    public void updateByProfileImage(String userId, MultipartFile file) throws IOException {
-    //        userRepository.findByUserId(socialUserDTO.getUserId())
-    //                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    //    public void updateByProfileImage(String email, MultipartFile file) throws IOException {
+    //        userRepository.findByUserId(email)
+    //                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     //
     //        Users updatedUser = Users.builder()
     //                .userId(socialUserDTO.getUserId())

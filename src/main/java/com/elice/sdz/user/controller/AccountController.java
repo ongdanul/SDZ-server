@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +39,14 @@ public class AccountController implements AccountApiDocs {
     }
 
     @PostMapping("/find-pw")
-    public ResponseEntity<String> findPw(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<Map<String, String>> findPw(@RequestBody Map<String, String> requestBody) {
         String userName = requestBody.get("userName");
         String email = requestBody.get("email");
 
         accountService.createTemporaryPassword(email, userName);
-        return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "임시 비밀번호가 발급되었습니다. 이메일을 확인해주세요.");
+        return ResponseEntity.ok(response);
     }
 }

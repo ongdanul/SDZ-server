@@ -1,12 +1,12 @@
 package com.elice.sdz.delivery.controller;
 
 import com.elice.sdz.delivery.controller.apiDocs.DeliveryAddressApiDocs;
-import com.elice.sdz.delivery.dto.DefaultCheckDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.service.DeliveryAddressService;
 import com.elice.sdz.user.dto.PageRequestDTO;
 import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.UserDetailDTO;
 import com.elice.sdz.user.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +30,14 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
         PageResponseDTO<DeliveryAddressListDTO> response = deliveryAddressService.deliveryAddressList(pageRequestDTO, email);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{deliveryAddressId}")
+    public ResponseEntity<DeliveryAddressDTO> deliveryAddressDetail(@PathVariable("deliveryAddressId") Long deliveryAddressId) {
+        String email = authenticationService.getCurrentUser();
+        DeliveryAddressDTO deliveryAddressDTO = deliveryAddressService.findDeliveryAddressInfo(deliveryAddressId, email);
+        return ResponseEntity.ok(deliveryAddressDTO);
+    }
+
     @PostMapping
     public ResponseEntity<Void> createNewAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
         deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());
@@ -45,9 +53,9 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
     }
 
     @PutMapping("/{deliveryAddressId}/default")
-    public ResponseEntity<String> updateDefaultAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId, @RequestBody DefaultCheckDTO defaultCheckDTO) {
-        defaultCheckDTO.setEmail(authenticationService.getCurrentUser());
-        deliveryAddressService.updateDefaultCheck(deliveryAddressId, defaultCheckDTO);
+    public ResponseEntity<String> updateDefaultAddress(@PathVariable("deliveryAddressId") Long deliveryAddressId) {
+        String email = authenticationService.getCurrentUser();
+        deliveryAddressService.updateDefaultCheck(deliveryAddressId, email);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

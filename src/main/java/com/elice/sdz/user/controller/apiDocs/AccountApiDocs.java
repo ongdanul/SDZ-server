@@ -14,5 +14,5 @@ public interface AccountApiDocs {
     ResponseEntity<List<UserAccountDTO>> findId(@RequestBody Map<String, String> requestBody);
 
     @Operation(summary = "일반 회원 비밀번호 찾기", description = "일반 회원 비밀번호 찾기를 처리하는 API입니다.")
-    ResponseEntity<String> findPw(@RequestBody Map<String, String> requestBody);
+    ResponseEntity<Map<String, String>> findPw(@RequestBody Map<String, String> requestBody);
 }
