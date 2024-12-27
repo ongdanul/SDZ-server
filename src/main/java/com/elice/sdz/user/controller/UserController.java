@@ -68,8 +68,8 @@ public class UserController implements UserApiDocs {
         updateLocalDTO.setEmail(email);
         userService.updateLocalUser(updateLocalDTO);
         response.put("success", true);
-        response.put("message", "일반 회원 정보가 성공적으로 변경되었습니다.");
-        return ResponseEntity.status(HttpStatus.OK).build();
+        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/social/{email}")
@@ -85,8 +85,8 @@ public class UserController implements UserApiDocs {
         updateSocialDTO.setEmail(email);
         userService.updateSocialUser(updateSocialDTO);
         response.put("success", true);
-        response.put("message", "소셜 회원 정보가 성공적으로 변경되었습니다.");
-        return ResponseEntity.status(HttpStatus.OK).build();
+        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{email}")
