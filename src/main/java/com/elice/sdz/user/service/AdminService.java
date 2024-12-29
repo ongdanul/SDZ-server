@@ -25,7 +25,7 @@ public class AdminService {
     private final UserRepository userRepository;
 
     public PageResponseDTO<UserListDTO> searchUserList(PageRequestDTO pageRequestDTO) {
-        Pageable pageable = pageRequestDTO.getPageable();
+        Pageable pageable = pageRequestDTO.getPageable("createdAt");
 
         Page<Users> result = searchWithFilters(pageRequestDTO, pageable);
 
@@ -43,8 +43,8 @@ public class AdminService {
     }
 
     private Page<Users> searchWithFilters(PageRequestDTO pageRequestDTO, Pageable pageable) {
-        String keyword = pageRequestDTO.getKeyword().trim();
-        String type = pageRequestDTO.getType().trim();
+        String keyword = pageRequestDTO.getKeyword() != null ? pageRequestDTO.getKeyword().trim() : "";
+        String type = pageRequestDTO.getType() != null ? pageRequestDTO.getType().trim() : "all";
 
         if (keyword.isEmpty()) {
             return getUserListByType(type, pageable);
@@ -105,6 +105,10 @@ public class AdminService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        if(user.getUserAuth().equals(Users.Auth.ROLE_ADMIN) && userRepository.countByRoleAdmin()<=1) {
+            throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
+        }
+
         userRepository.delete(user);
     }
 
@@ -117,6 +121,16 @@ public class AdminService {
         List<Users> users = userRepository.findAllById(emails);
         if (users.size() != emails.size()) {
             throw new CustomException(ErrorCode.USER_IDS_NOT_EXIST);
+        }
+
+        long adminCountInDeleteList = users.stream()
+                .filter(user -> user.getUserAuth().equals(Users.Auth.ROLE_ADMIN))
+                .count();
+
+        long totalAdminCount = userRepository.countByRoleAdmin();
+
+        if (adminCountInDeleteList > 0 && totalAdminCount - adminCountInDeleteList <= 1) {
+            throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
         }
 
         userRepository.deleteAllByEmailIn(emails);

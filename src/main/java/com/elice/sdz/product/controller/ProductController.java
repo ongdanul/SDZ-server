@@ -3,6 +3,7 @@ package com.elice.sdz.product.controller;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,8 @@ public class ProductController {
     // 상품 생성
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(@RequestPart("productDTO") @Valid String productDTOJson,
-                                                            @RequestPart("images") List<MultipartFile> images) {
+                                                            @RequestPart("images") List<MultipartFile> images,
+                                                            @RequestPart("thumbnail") MultipartFile thumbnail) {
 
         try {
             // JSON 문자열을 ProductDTO 객체로 변환
@@ -51,28 +53,47 @@ public class ProductController {
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
 
             // 서비스 호출
-            ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images);
+            ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images, thumbnail);
             return new ResponseEntity<>(productResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // 상품 수정
     @PutMapping("/{productId}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long productId, @RequestBody @Valid ProductDTO productDTO) {
-        ProductResponseDTO productResponseDTO = productService.updateProduct(productId, productDTO);
-        if (productResponseDTO != null) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable Long productId,
+            @RequestPart("productDTO") @Valid String productDTOJson,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages,
+            @RequestPart(value = "deletedImagePaths", required = false) String deletedImagePathsJson,
+            @RequestPart(value = "newThumbnail", required = false) String newThumbnail) {
+        try {
+            // JSON 문자열을 ProductDTO 객체로 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+            ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
+
+            // deletedImagePaths JSON 파싱
+            List<String> deletedImagePaths = objectMapper.readValue(
+                    deletedImagePathsJson, new TypeReference<List<String>>() {});
+
+            // 서비스 호출
+            ProductResponseDTO productResponseDTO = productService.updateProduct(
+                    productId, productDTO, newImages, deletedImagePaths, newThumbnail);
+
             return new ResponseEntity<>(productResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+
 
     // 상품 삭제
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/category/{categoryId}")

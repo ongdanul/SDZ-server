@@ -19,14 +19,29 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public CategoryResponseDTO createCategory(CategoryRequestDTO categoryRequestDTO) {
-        long categoryCount = categoryRepository.count();
         Category newCategory = categoryRequestDTO.toEntity();
+        int categoryCount = categoryRepository.countByParentIdNull();
 
         if (categoryRepository.findByCategoryName(newCategory.getCategoryName()).isPresent()) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
 
         if (categoryCount >= CAPACITY) {
+            throw new CustomException(ErrorCode.CATEGORY_CAPACITY_EXCEEDED);
+        }
+
+        return categoryRepository.save(newCategory).toResponseDTO();
+    }
+
+    public CategoryResponseDTO createChildCategory(CategoryRequestDTO categoryRequestDTO) {
+        Category newCategory = categoryRequestDTO.toEntity();
+        int childCategoryCount = categoryRepository.countByParentId(newCategory.getParentId());
+
+        if (categoryRepository.findByCategoryName(newCategory.getCategoryName()).isPresent()) {
+            throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        }
+
+        if (childCategoryCount >= CAPACITY) {
             throw new CustomException(ErrorCode.CATEGORY_CAPACITY_EXCEEDED);
         }
 

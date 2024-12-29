@@ -6,15 +6,15 @@ import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

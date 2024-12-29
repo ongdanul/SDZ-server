@@ -44,6 +44,8 @@ public class JWTUtil {
         return getClaim(token, "category", String.class);
     }
 
+    public String getLoginType(String token) { return getClaim(token, "loginType", String.class); }
+
     public boolean isValidCategory(String token, String tokenName) {
         String category = getCategory(token);
         return tokenName.equals(category);
@@ -54,13 +56,14 @@ public class JWTUtil {
         return expirationDate.before(new Date());
     }
 
-    public String createJwt(String category, String email, String auth, Long expiredMs) {
+    public String createJwt(String category, String email, String auth, String loginType, Long expiredMs) {
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .claim("category", category)
                 .claim("email", email)
                 .claim("auth", auth)
+                .claim("loginType", loginType)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)

@@ -27,8 +27,6 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         LoginRequest loginRequest = (LoginRequest) request.getAttribute("loginRequest");
         String email = loginRequest.getEmail();
 
-        log.info("Test - onAuthenticationFailure email : {}", email);
-
         // 로그인 실패 처리: 실패 횟수 증가 및 잠금 여부 처리
         boolean isLocked = handleLoginFailure(email);
 

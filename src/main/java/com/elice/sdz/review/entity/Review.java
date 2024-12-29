@@ -5,16 +5,16 @@ import com.elice.sdz.image.entity.Image;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+//@ToString
 @Entity
 @DynamicInsert
 @NoArgsConstructor

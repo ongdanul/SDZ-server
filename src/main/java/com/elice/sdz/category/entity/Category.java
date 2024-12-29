@@ -4,17 +4,15 @@ import com.elice.sdz.category.dto.CategoryResponseDTO;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.product.entity.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@Entity
+@Getter
+@Setter
 @Builder
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "category")
@@ -28,18 +26,18 @@ public class Category extends BaseEntity {
     @Column(name = "category_name", length = 10, nullable = false)
     private String categoryName;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
-            orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Product> products = new ArrayList<>();
+    @Column(name = "parent_id", nullable = true)
+    private Long parentId;
 
-    public Category(String categoryName) {
-        this.categoryName = categoryName;
-    }
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
+            orphanRemoval = false, fetch = FetchType.EAGER)
+    private List<Product> products = new ArrayList<>();
 
     public CategoryResponseDTO toResponseDTO() {
         return CategoryResponseDTO.builder()
                 .categoryId(categoryId)
                 .categoryName(categoryName)
+                .parentId(parentId)
                 .build();
     }
 }

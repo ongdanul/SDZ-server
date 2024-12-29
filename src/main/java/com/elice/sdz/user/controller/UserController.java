@@ -51,13 +51,11 @@ public class UserController implements UserApiDocs {
     @GetMapping("/my-page")
     public ResponseEntity<UserDetailDTO> userDetail(){
         String email = authenticationService.getCurrentUser();
-        log.info(email);
         UserDetailDTO userDetailDTO = userService.findUserInfo(email);
         return ResponseEntity.ok(userDetailDTO);
     }
 
     @PutMapping("/local/{email}")
-    @PreAuthorize("#email == authentication.name && !@userService.isSocial(authentication.name)")
     public ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateLocalDTO updateLocalDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
@@ -67,15 +65,14 @@ public class UserController implements UserApiDocs {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        updateLocalDTO.setEmail(authenticationService.getCurrentUser());
+        updateLocalDTO.setEmail(email);
         userService.updateLocalUser(updateLocalDTO);
         response.put("success", true);
-        response.put("message", "일반 회원 정보가 성공적으로 변경되었습니다.");
-        return ResponseEntity.status(HttpStatus.OK).build();
+        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/social/{email}")
-    @PreAuthorize("#email == authentication.name && @userService.isSocial(authentication.name)")
     public ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateSocialDTO updateSocialDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
@@ -85,15 +82,14 @@ public class UserController implements UserApiDocs {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        updateSocialDTO.setEmail(authenticationService.getCurrentUser());
+        updateSocialDTO.setEmail(email);
         userService.updateSocialUser(updateSocialDTO);
         response.put("success", true);
-        response.put("message", "소셜 회원 정보가 성공적으로 변경되었습니다.");
-        return ResponseEntity.status(HttpStatus.OK).build();
+        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{email}")
-    @PreAuthorize("#email == authentication.name")
     public ResponseEntity<Void> deleteUser(HttpServletResponse response, @PathVariable("email") String email) {
         userService.deleteUser(response, email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

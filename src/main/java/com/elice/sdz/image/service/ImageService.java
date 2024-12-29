@@ -23,32 +23,39 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
 
-    // 상품 조회 메서드
-    private Product findByProductId(Long id){
-        return productRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
-    public void uploadImage(Product product, List<MultipartFile> images) {
+    public String uploadImage(Product product, List<MultipartFile> images, MultipartFile thumbnail) {
         String uploadsDir = "src/main/resources/static/uploads/";
-        for (MultipartFile image : images) {
+        String thumbnailPath = null; // 썸네일 경로를 저장할 변수
 
+        for (MultipartFile image : images) {
             try {
                 // 이미지 파일 경로를 저장
                 String dbFilePath = saveImage(image, uploadsDir);
 
-                // ProductThumbnail 엔티티 생성 및 저장
+                // 썸네일로 지정된 이미지와 비교
+                if (thumbnail != null && image.getOriginalFilename().equals(thumbnail.getOriginalFilename())) {
+                    thumbnailPath = dbFilePath; // 썸네일 경로 설정
+                }
+
+                // image 엔티티 생성 및 저장
                 Image newImage = new Image(product, dbFilePath);
                 imageRepository.save(newImage);
             } catch (IOException e) {
-            // 파일 저장 중 오류가 발생한 경우 처리
-            throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
+                throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
             }
         }
+
+        // 썸네일 경로가 설정되지 않았을 경우 예외 처리
+        if (thumbnailPath == null && thumbnail != null) {
+            throw new CustomException(ErrorCode.THUMBNAIL_NOT_FOUND);
+        }
+
+        return thumbnailPath; // 썸네일 경로 반환
     }
 
-    private String saveImage(MultipartFile image, String uploadsDir) throws IOException {
+    public String saveImage(MultipartFile image, String uploadsDir) throws IOException {
         // 파일 이름 생성
+//        String fileName = UUID.randomUUID().toString().replace("-", "");
         String fileName = UUID.randomUUID().toString().replace("-", "") + "_" + image.getOriginalFilename();
         // 실제 파일이 저장될 경로
         String filePath = uploadsDir + fileName;
@@ -60,5 +67,20 @@ public class ImageService {
         Files.write(path, image.getBytes()); // 디렉토리에 파일 저장
 
         return dbFilePath;
+    }
+
+    public void deleteImage(Image image) {
+        String localFilePath = "src/main/resources/static" + image.getImagePath();
+        deleteLocalFile(localFilePath);
+        imageRepository.delete(image);
+    }
+
+    public void deleteLocalFile(String filePath) {
+        try {
+            Path path = Paths.get(filePath);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.IMAGE_DELETE_FAILED);
+        }
     }
 }

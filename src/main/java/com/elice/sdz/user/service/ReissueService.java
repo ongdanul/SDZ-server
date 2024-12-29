@@ -1,6 +1,6 @@
 package com.elice.sdz.user.service;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.global.jwt.JWTUtil;
@@ -14,8 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static com.elice.sdz.global.config.SecurityConstants.*;
+import static com.elice.sdz.global.util.CookieUtil.getCookieValue;
 
 @Slf4j
 @Service
@@ -24,12 +26,11 @@ public class ReissueService {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     public boolean reissue(HttpServletRequest request, HttpServletResponse response) {
-        String refresh = CookieUtils.getCookieValue(request, "refresh");
-
-        if (refresh == null) {
-            CookieUtils.deleteCookie(response,"access");
-            return false;
-        }
+        Optional<String> cookieValue = getCookieValue(request, "refresh");
+        String refresh = cookieValue.orElseThrow(() -> {
+            log.warn("리프레시 토큰을 찾을 수 없습니다.");
+            return new CustomException(ErrorCode.INVALID_REFRESH_COOKIE);
+        });
 
         if (!validateRefreshToken(refresh)) {
             return false;
@@ -37,17 +38,19 @@ public class ReissueService {
 
         String email = jwtUtil.getEmail(refresh);
         String auth = jwtUtil.getAuth(refresh);
+        String loginType = jwtUtil.getLoginType(refresh);
 
-        String newAccessToken = jwtUtil.createJwt("access", email, auth, ACCESS_TOKEN_EXPIRATION);
-        String newRefreshToken = jwtUtil.createJwt("refresh", email, auth, REFRESH_TOKEN_EXPIRATION);
+
+        String newAccessToken = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, auth, loginType, ACCESS_TOKEN_EXPIRATION);
+        String newRefreshToken = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, auth, loginType, REFRESH_TOKEN_EXPIRATION);
 
         refreshRepository.deleteByRefresh(refresh);
         addRefreshToken(email, newRefreshToken);
 
-        CookieUtils.deleteCookies(request, response);
+        CookieUtil.deleteCookie( response, REFRESH_COOKIE_NAME);
 
         response.setHeader("Authorization", "Bearer " + newAccessToken);
-        CookieUtils.createCookies(response,"refresh", newRefreshToken, REFRESH_COOKIE_EXPIRATION);
+        CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, newRefreshToken, REFRESH_COOKIE_EXPIRATION);
 
         return true;
     }
@@ -55,23 +58,19 @@ public class ReissueService {
     private boolean validateRefreshToken(String refresh) {
         try {
             jwtUtil.isExpired(refresh);
-
-            if (!jwtUtil.isValidCategory(refresh, "refresh")) {
-                log.warn("토큰 카테고리가 불일치합니다.: {}", refresh);
-                throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-            }
-
-            if (Boolean.FALSE.equals(refreshRepository.existsByRefresh(refresh))) {
-                log.warn("DB에 리프레시 토큰이 존재하지 않습니다: {}", refresh);
-                throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
-            }
-
         } catch (ExpiredJwtException e) {
             log.warn("만료된 리프레시 토큰입니다.: {}", refresh);
             throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
-        } catch (Exception e) {
-            log.error("리프레시 토큰 검증 중 오류가 발생하였습니다.: {}", refresh, e);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        if (!jwtUtil.isValidCategory(refresh, REFRESH_TOKEN_NAME)) {
+            log.warn("토큰 카테고리가 불일치합니다.: {}", refresh);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        if (Boolean.FALSE.equals(refreshRepository.existsByRefresh(refresh))) {
+            log.warn("DB에 리프레시 토큰이 존재하지 않습니다: {}", refresh);
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
         return true;

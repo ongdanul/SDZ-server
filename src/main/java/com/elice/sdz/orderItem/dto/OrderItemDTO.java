@@ -14,5 +14,6 @@ public class OrderItemDTO {
         private int quantity;
         private String productName;
         private double productAmount;
+        private String thumbnailPath;
     }
 }

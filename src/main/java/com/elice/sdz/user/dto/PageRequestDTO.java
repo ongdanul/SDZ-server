@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Data
 @Builder
@@ -14,13 +15,11 @@ import org.springframework.data.domain.Pageable;
 @AllArgsConstructor
 public class PageRequestDTO {
 
-    @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
-    private int page = 1;
+    private int page;
 
-    @Builder.Default
     @Schema(description = "페이지 크기", example = "10")
-    private int size = 10;
+    private int size;
 
     @Schema(description = "검색 타입", example = "all")
     private String type;
@@ -36,8 +35,8 @@ public class PageRequestDTO {
         return type != null ? type : "all";
     }
 
-    public Pageable getPageable() {
+    public Pageable getPageable(String... props) {
 
-        return PageRequest.of(this.page - 1, this.size);
+        return PageRequest.of(this.page - 1, this.size, Sort.by(props).descending());
     }
 }

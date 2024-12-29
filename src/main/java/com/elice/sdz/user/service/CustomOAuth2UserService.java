@@ -32,8 +32,6 @@
         public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
             OAuth2User oAuth2User = super.loadUser(userRequest);
 
-            log.info("Test - CustomOAuth2UserService OAuth2User attributes: {}", oAuth2User.getAttributes());
-
             String provider = userRequest.getClientRegistration().getRegistrationId();
             OAuth2UserInfo oAuth2UserInfo;
 

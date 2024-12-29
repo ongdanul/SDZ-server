@@ -61,6 +61,7 @@ public class OrderItemService {
                     detailDTO.setProductName(detail.getProduct().getProductName());
                     detailDTO.setQuantity(detail.getQuantity());
                     detailDTO.setProductAmount(detail.getProductAmount());
+                    detailDTO.setThumbnailPath(detail.getProduct().getThumbnailPath());
                     return detailDTO;
                 }).collect(Collectors.toList());
 
@@ -77,8 +78,9 @@ public class OrderItemService {
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
                 .findByOrderItemIdAndProduct(orderItem.getId(), addProduct);
 
-        int currentQuantity = optionalOrderItemDetail.map(OrderItemDetail::getQuantity).orElse(0);
-        if (currentQuantity + quantity > addProduct.getProductCount()) {
+        int currentQuantity = optionalOrderItemDetail.map(OrderItemDetail::getQuantity).orElse(0); // 기존 수량
+
+        if (addProduct.getProductCount() < currentQuantity + quantity) {
             throw new CustomException(ErrorCode.OUT_OF_STOCK); // 재고 초과 시 예외 발생
         }
 
@@ -93,8 +95,10 @@ public class OrderItemService {
             orderItemDetail.setOrderItem(orderItem);
             orderItemDetail.setProduct(addProduct);
             orderItemDetail.setQuantity(quantity);
+            orderItemDetail.setProductAmount(addProduct.getProductAmount());
             orderItemDetailRepository.save(orderItemDetail);
         }
+
         orderItem.updateTimestamp();
         orderItemRepository.save(orderItem);
     }
@@ -104,33 +108,38 @@ public class OrderItemService {
     public void deleteOrderItem(String userId, Long productId, int quantity) {
         OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
-        Product deldteProduct = findByProductId(productId);
+        Product deleteProduct = findByProductId(productId);
 
         Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
-                .findByOrderItemIdAndProduct(orderItem.getId(), deldteProduct);
+                .findByOrderItemIdAndProduct(orderItem.getId(), deleteProduct);
 
         if (optionalOrderItemDetail.isPresent()) {
             OrderItemDetail orderItemDetail = optionalOrderItemDetail.get();
-            if (orderItemDetail.getQuantity() > quantity) {
-                // 수량만 감소
-                orderItemDetail.setQuantity(orderItemDetail.getQuantity() - quantity);
-                orderItemDetailRepository.save(orderItemDetail);
+
+            // 수량 감소 처리
+            int updatedQuantity = orderItemDetail.getQuantity() - quantity;
+            if (updatedQuantity <= 0) {
+                // 수량이 0 이하일 경우 해당 항목 삭제
+                orderItemDetailRepository.delete(orderItemDetail);
+                orderItem.getOrderItemDetails().remove(orderItemDetail);
             } else {
-                // 수량이 일치하거나 적을 경우 완전히 삭제
-                orderItem.getOrderItemDetails().remove(orderItemDetail); // 리스트에서 제거
-                orderItemDetailRepository.delete(orderItemDetail); // DB에서 삭제
+                // 수량이 남아 있을 경우 업데이트
+                orderItemDetail.setQuantity(updatedQuantity);
+                orderItemDetailRepository.save(orderItemDetail);
             }
+
             orderItem.updateTimestamp();
             orderItemRepository.save(orderItem);
         }
     }
+
 
     // 장바구니 전체 삭제
     @Transactional
     public void clearOrderItems(String userId) {
         OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
-//        orderItemRepository.delete(orderItem);
+
         orderItem.getOrderItemDetails().clear();
         orderItem.updateTimestamp();
         orderItemRepository.save(orderItem);

@@ -4,7 +4,6 @@ import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomUserDetails;
 import com.elice.sdz.user.entity.Users;
-import com.elice.sdz.user.service.ReissueService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
+import static com.elice.sdz.global.config.SecurityConstants.ACCESS_TOKEN_NAME;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,7 +43,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             jwtUtil.isExpired(accessToken);
 
-            if (!jwtUtil.isValidCategory(accessToken, "access")) {
+            if (!jwtUtil.isValidCategory(accessToken, ACCESS_TOKEN_NAME)) {
                 throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
             }
 

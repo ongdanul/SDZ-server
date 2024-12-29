@@ -1,6 +1,6 @@
 package com.elice.sdz.global.jwt;
 
-import com.elice.sdz.global.config.CookieUtils;
+import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.LoginRequest;
@@ -14,7 +14,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,18 +48,11 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws
             AuthenticationException {
-        //TODO 로그인 기능 완성후 TEST용 로그 삭제하기
-        log.info("Test - LoginFilter is being called"); //Test
-//        String email = request.getParameter("email");
-//        String password = request.getParameter("password");
-//        String email = obtainEmail(request);
-//        String password = obtainPassword(request);
 
         ObjectMapper objectMapper = new ObjectMapper();
         LoginRequest loginRequest = null;
 
         try {
-            // JSON 데이터를 LoginRequest 객체로 변환
             loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
             request.setAttribute("loginRequest", loginRequest);
 
@@ -73,16 +65,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String password = loginRequest.getPassword();
         boolean rememberId = loginRequest.isRememberId();
         boolean rememberMe = loginRequest.isRememberMe();
-
-        log.info("Attempting authentication - email: {}, password: {}", email, password);
-
-//        boolean rememberId = "true".equals(request.getParameter("rememberId"));
-//        boolean rememberMe = "true".equals(request.getParameter("rememberMe"));
-
-        String rememberIdString = Boolean.toString(rememberId); //Test
-        String rememberMeString = Boolean.toString(rememberMe); //Test
-
-        log.info("Test - rememberId: {}, rememberMe: {}", rememberIdString, rememberMeString); //Test
 
         Map<String, Boolean> loginDetails = new HashMap<>();
         loginDetails.put("rememberId", rememberId);
@@ -108,25 +90,24 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        String loginType = user.isSocial() ? "social" : "local";
+
         if (isUserLoginLocked(user)) {
             return;
         }
 
         resetLoginAttempts(user);
 
-        String access = jwtUtil.createJwt("access", email, role, ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt("refresh", email, role, REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt(ACCESS_TOKEN_NAME, email, role, loginType,ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(REFRESH_TOKEN_NAME, email, role, loginType, REFRESH_TOKEN_EXPIRATION);
 
         addRefreshToken(email, refresh);
 
         response.setHeader("Authorization", "Bearer " + access);
-        CookieUtils.createCookies(response,"refresh", refresh, REFRESH_COOKIE_EXPIRATION);
+        CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
         response.setStatus(HttpStatus.OK.value());
 
         handleCookie(response, authentication, email, refresh);
-
-
-        log.info("Test - successfulAuthentication");
     }
 
     @Override
@@ -164,18 +145,14 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         if (Boolean.TRUE.equals(rememberId)) {
             String encodedEmail = Base64.getEncoder().encodeToString(email.getBytes(StandardCharsets.UTF_8));
-            CookieUtils.createCookies(response, "remember-id", encodedEmail, REMEMBER_ID_EXPIRATION);
+            CookieUtil.createCookie(response, REMEMBER_ID_COOKIE_NAME, encodedEmail, REMEMBER_ID_EXPIRATION);
         } else {
-            CookieUtils.deleteCookie(response, "remember-id");
+            CookieUtil.deleteCookie(response, REMEMBER_ID_COOKIE_NAME);
         }
 
         if (Boolean.TRUE.equals(rememberMe)) {
-            CookieUtils.createCookies(response, "remember-me", refresh, REMEMBER_ME_EXPIRATION);
+            CookieUtil.createCookie(response, REMEMBER_ME_COOKIE_NAME, refresh, REMEMBER_ME_EXPIRATION);
         }
-
-        //TODO 완성후 TEST용 로그 삭제하기
-        log.info("Test - Remember ID cookie processed: {}", rememberId);
-        log.info("Test - remember Me cookie processed: {}", rememberMe);
     }
 
     private void addRefreshToken(String email, String refresh) {
