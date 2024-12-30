@@ -14,7 +14,7 @@ public enum ErrorCode {
 
     // 주문 관련 에러
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "주문이 존재하지 않습니다."),
-    INVALID_ORDER(HttpStatus.BAD_REQUEST, "INVALID_ORDER", "주문이 잘못되었습니다."),
+    INVALID_ORDER_COUNT(HttpStatus.BAD_REQUEST, "INVALID_ORDER_COUNT", "주문 수량은 1 이상이어야 합니다."),
     ORDER_CANNOT_BE_MODIFIED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_MODIFIED", "주문을 수정할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
     ORDER_CANNOT_BE_CANCELLED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_CANCELLED", "주문을 취소할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
     ORDER_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_DETAIL_NOT_FOUND","주문 상품 정보를 찾을 수 없습니다"),
