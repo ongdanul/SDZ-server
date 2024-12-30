@@ -5,10 +5,7 @@ import com.elice.sdz.user.repository.HttpCookieOAuth2AuthorizedClientRepository;
 import com.elice.sdz.user.repository.RefreshRepository;
 import com.elice.sdz.user.repository.UserRepository;
 import com.elice.sdz.user.service.CustomOAuth2UserService;
-import com.elice.sdz.user.service.CustomUserDetailsService;
-import com.elice.sdz.user.service.ReissueService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -53,6 +50,7 @@ public class CustomSecurityConfig {
             "/api/user/sign-up",
             "/api/check/**",
             "/oauth2/**",
+            "/uploads/**",
     };
 
     @Bean
@@ -78,7 +76,7 @@ public class CustomSecurityConfig {
         //CORS
         http.cors(cors -> cors.configurationSource(request -> {
             var config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:5173"));
+            config.setAllowedOrigins(List.of("http://localhost:5173", "http://34.64.176.77:5173"));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
@@ -90,8 +88,8 @@ public class CustomSecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER).permitAll()
                         .requestMatchers(WHITE_LIST).permitAll()
-                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**", "/uploads/**").permitAll()
-                        .requestMatchers("/api/admin/**").permitAll()/*hasRole("ADMIN")*/
+                        .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 //LoginFilter 추가
                 .addFilterBefore(new JWTFilter(jwtUtil), CustomLoginFilter.class)
