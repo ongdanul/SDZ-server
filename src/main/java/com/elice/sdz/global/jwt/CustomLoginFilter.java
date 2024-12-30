@@ -3,7 +3,8 @@ package com.elice.sdz.global.jwt;
 import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
-import com.elice.sdz.user.dto.LoginRequest;
+import com.elice.sdz.user.dto.request.LoginRequest;
+import com.elice.sdz.user.dto.response.LoginResponse;
 import com.elice.sdz.user.entity.RefreshToken;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
@@ -50,7 +51,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             AuthenticationException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        LoginRequest loginRequest = null;
+        LoginRequest loginRequest;
 
         try {
             loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
@@ -61,38 +62,41 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             throw new CustomException(ErrorCode.INVALID_LOGIN_REQUEST);
         }
 
-        String email = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
-        boolean rememberId = loginRequest.isRememberId();
-        boolean rememberMe = loginRequest.isRememberMe();
-
-        Map<String, Boolean> loginDetails = new HashMap<>();
-        loginDetails.put("rememberId", rememberId);
-        loginDetails.put("rememberMe", rememberMe);
-
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password, null);
-        authToken.setDetails(loginDetails);
-
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword(), null);
         return authenticationManager.authenticate(authToken);
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authentication) throws IOException, ServletException {
+        LoginRequest loginRequest = (LoginRequest) request.getAttribute("loginRequest");
+        if (loginRequest == null) {
+            sendResponse(response, ErrorCode.INVALID_LOGIN_REQUEST.getHttpStatus(), ErrorCode.INVALID_LOGIN_REQUEST.getMessage());
+            return;
+        }
+
         String email = authentication.getName();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        String role = authorities.stream()
+        Optional<String> optionalRole = authorities.stream()
                 .findFirst()
-                .map(GrantedAuthority::getAuthority)
-                .orElseThrow(() -> new CustomException(ErrorCode.MISSING_AUTHORIZATION));
+                .map(GrantedAuthority::getAuthority);
+        if (optionalRole.isEmpty()) {
+            sendResponse(response, ErrorCode.MISSING_AUTHORIZATION.getHttpStatus(), ErrorCode.MISSING_AUTHORIZATION.getMessage());
+            return;
+        }
+        String role = optionalRole.get();
 
-        Users user = userRepository.findById(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Optional<Users> optionalUser = userRepository.findById(email);
+        if (optionalUser.isEmpty()) {
+            sendResponse(response, ErrorCode.USER_NOT_FOUND.getHttpStatus(), ErrorCode.USER_NOT_FOUND.getMessage());
+            return;
+        }
+        Users user = optionalUser.get();
 
         String loginType = user.isSocial() ? "social" : "local";
 
-        if (isUserLoginLocked(user)) {
+        if (isUserLoginLocked(response, user)) {
             return;
         }
 
@@ -105,9 +109,9 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
-        response.setStatus(HttpStatus.OK.value());
+        sendResponse(response, HttpStatus.valueOf(HttpStatus.OK.value()), "로그인이 성공적으로 처리되었습니다.");
 
-        handleCookie(response, authentication, email, refresh);
+        handleCookie(response, loginRequest, email, refresh);
     }
 
     @Override
@@ -117,12 +121,24 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         customAuthenticationFailureHandler.onAuthenticationFailure(request, response, failed);
     }
 
-    private boolean isUserLoginLocked(Users user) {
+    private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
         if (user.isLoginLock()) {
             log.info("회원 아이디가 잠금 상태입니다: {}", user.getEmail());
-            throw new CustomException(ErrorCode.LOGIN_LOCKED);
+            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
+            return true;
         }
         return false;
+    }
+    private void sendResponse(HttpServletResponse response, HttpStatus statusCode, String message) throws IOException {
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setHttpStatus(statusCode);
+        loginResponse.setMessage(message);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
     }
 
     private void resetLoginAttempts(Users user) {
@@ -137,20 +153,15 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
 
-    private void handleCookie(HttpServletResponse response, Authentication authentication, String email, String refresh) {
-        @SuppressWarnings("unchecked")
-        Map<String, Boolean> loginDetails = (Map<String, Boolean>) authentication.getDetails();
-        Boolean rememberId = loginDetails.getOrDefault("rememberId", false);
-        Boolean rememberMe = loginDetails.getOrDefault("rememberMe", false);
-
-        if (Boolean.TRUE.equals(rememberId)) {
+    private void handleCookie(HttpServletResponse response, LoginRequest loginRequest, String email, String refresh) {
+        if (loginRequest.isRememberId()) {
             String encodedEmail = Base64.getEncoder().encodeToString(email.getBytes(StandardCharsets.UTF_8));
             CookieUtil.createCookie(response, REMEMBER_ID_COOKIE_NAME, encodedEmail, REMEMBER_ID_EXPIRATION);
         } else {
             CookieUtil.deleteCookie(response, REMEMBER_ID_COOKIE_NAME);
         }
 
-        if (Boolean.TRUE.equals(rememberMe)) {
+        if (loginRequest.isRememberMe()) {
             CookieUtil.createCookie(response, REMEMBER_ME_COOKIE_NAME, refresh, REMEMBER_ME_EXPIRATION);
         }
     }

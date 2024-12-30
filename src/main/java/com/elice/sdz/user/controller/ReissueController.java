@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ public class ReissueController {
     private final ReissueService reissueService;
 
     @PostMapping
-    public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
         reissueService.reissue(request, response);
 
         return ResponseEntity.ok().build();

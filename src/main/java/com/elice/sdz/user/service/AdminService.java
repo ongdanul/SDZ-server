@@ -2,8 +2,8 @@ package com.elice.sdz.user.service;
 
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
