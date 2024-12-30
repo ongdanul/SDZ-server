@@ -3,11 +3,8 @@ package com.elice.sdz.product.entity;
 import com.elice.sdz.category.entity.Category;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.image.entity.Image;
-import com.elice.sdz.inquiry.entity.Inquiry;
-import com.elice.sdz.orderItem.entity.OrderItem;
 import com.elice.sdz.orderItem.entity.OrderItemDetail;
 import com.elice.sdz.product.dto.ProductResponseDTO;
-import com.elice.sdz.review.entity.Review;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +14,6 @@ import java.util.List;
 
 @Getter
 @Setter
-//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,15 +51,8 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private final List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private final List<Review> reviews  = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private final List<Inquiry> inquiries = new ArrayList<>();
-
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)//, orphanRemoval = true
     private final List<OrderItemDetail> orderItemDetails = new ArrayList<>();
-
 
     public ProductResponseDTO toResponseDTO() {
         List<String> imagePaths = images.stream()

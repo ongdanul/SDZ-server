@@ -1,6 +1,5 @@
 package com.elice.sdz.orderItem.dto;
 
-import com.elice.sdz.product.entity.Product;
 import lombok.Getter;
 import lombok.Setter;
 

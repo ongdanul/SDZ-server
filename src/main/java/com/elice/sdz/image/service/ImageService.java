@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +23,9 @@ import java.io.IOException;
 public class ImageService {
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
+
+//    @Value("${file.upload-dir}")
+//    String uploadsDir;
 
     public String uploadImage(Product product, List<MultipartFile> images, MultipartFile thumbnail) {
         String uploadsDir = "src/main/resources/static/uploads/";

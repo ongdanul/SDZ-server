@@ -4,19 +4,15 @@ import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.product.entity.Product;
-import com.elice.sdz.review.entity.Review;
-import com.elice.sdz.user.dto.SignUpDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter
-//@ToString
 @Entity
 @Builder
 @NoArgsConstructor
@@ -74,10 +70,6 @@ public class Users extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private final List<Review> reviews = new ArrayList<>();
 
     public enum Auth {
         ROLE_USER,

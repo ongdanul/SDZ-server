@@ -22,8 +22,6 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
 
-import static com.elice.sdz.global.config.SecurityConstants.*;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
