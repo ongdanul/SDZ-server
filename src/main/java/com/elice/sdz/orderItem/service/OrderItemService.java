@@ -13,6 +13,7 @@ import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,8 +47,33 @@ public class OrderItemService {
         OrderItem orderItem = orderItemRepository.findByUser(findUserById(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
+        // 삭제할 orderItemDetail
+        List<OrderItemDetail> detailsToRemove = new ArrayList<>();
+
+        for (OrderItemDetail detail : new ArrayList<>(orderItem.getOrderItemDetails())) {
+            Product product = detail.getProduct();
+            if (product.getProductCount() <= 0) {
+                // 재고가 없는 상품 삭제 목록에 추가
+                detailsToRemove.add(detail);
+            } else if (product.getProductCount() < detail.getQuantity()) {
+                // 재고보다 수량이 많으면 조정
+                detail.setQuantity(product.getProductCount());
+                orderItemDetailRepository.save(detail);
+            }
+        }
+
+        // 삭제 작업 처리
+        for (OrderItemDetail detail : detailsToRemove) {
+            orderItemDetailRepository.delete(detail);
+            orderItem.getOrderItemDetails().remove(detail);
+        }
+
+        orderItem.updateTimestamp();
+        orderItemRepository.save(orderItem);
+
         return convertToDTO(orderItem);
     }
+
 
     // DTO 변환 메서드
     private OrderItemDTO convertToDTO(OrderItem orderItem) {
