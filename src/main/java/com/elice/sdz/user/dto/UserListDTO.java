@@ -3,7 +3,6 @@ package com.elice.sdz.user.dto;
 import com.elice.sdz.user.entity.Users;
 import lombok.Data;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data

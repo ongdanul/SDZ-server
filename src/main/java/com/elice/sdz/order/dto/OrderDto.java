@@ -2,11 +2,7 @@ package com.elice.sdz.order.dto;
 
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.order.entity.Order.Status;  // Order 엔티티의 Status enum 사용
-import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
-import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
-import com.elice.sdz.user.entity.Users;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -2,9 +2,7 @@ package com.elice.sdz.order.entity;
 
 
 import com.elice.sdz.delivery.entity.Delivery;
-import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.global.entity.BaseEntity;
-import com.elice.sdz.order.dto.OrderDto;
 import com.elice.sdz.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +13,6 @@ import java.util.List;
 
 @Getter
 @Setter
-//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

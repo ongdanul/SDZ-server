@@ -11,26 +11,21 @@ import com.elice.sdz.order.entity.OrderDetail;
 import com.elice.sdz.order.repository.OrderDetailRepository;
 import com.elice.sdz.order.repository.OrderRepository;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
-import com.elice.sdz.orderItem.entity.OrderItem;
-import com.elice.sdz.orderItem.repository.OrderItemDetailRepository;
 import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

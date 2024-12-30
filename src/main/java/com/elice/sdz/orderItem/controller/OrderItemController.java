@@ -11,7 +11,6 @@ import com.elice.sdz.user.service.AuthenticationService;
 @RestController
 @RequestMapping("/api/order-item")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class OrderItemController {
 
     private final OrderItemService orderItemService;

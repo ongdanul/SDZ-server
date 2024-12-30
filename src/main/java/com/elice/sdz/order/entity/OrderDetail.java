@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 
 @Getter
 @Setter
-//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

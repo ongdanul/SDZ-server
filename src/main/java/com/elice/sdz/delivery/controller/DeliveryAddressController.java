@@ -6,7 +6,6 @@ import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.service.DeliveryAddressService;
 import com.elice.sdz.user.dto.PageRequestDTO;
 import com.elice.sdz.user.dto.PageResponseDTO;
-import com.elice.sdz.user.dto.UserDetailDTO;
 import com.elice.sdz.user.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
