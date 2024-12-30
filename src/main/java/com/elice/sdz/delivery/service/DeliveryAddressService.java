@@ -78,8 +78,8 @@ public class DeliveryAddressService {
 
         DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("새 배송 주소가 성공적으로 생성되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 생성 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -104,8 +104,8 @@ public class DeliveryAddressService {
 
         deliveryAddressDTO.updateEntity(deliveryAddress, user);
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("배송 주소가 성공적으로 수정되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -129,8 +129,8 @@ public class DeliveryAddressService {
         deliveryAddress.setDefaultCheck(true);
 
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("배송 주소가 성공적으로 수정되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -152,11 +152,10 @@ public class DeliveryAddressService {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
-        log.info("email {}, DB Email {}",email, deliveryAddress.getUser().getEmail());
         if(!deliveryAddress.getUser().getEmail().equals(email)) {
             throw new AccessDeniedException("삭제할 권한이 없습니다.");
         }
-        deliveryAddressRepository.delete(deliveryAddress);
         log.info("배송 주소가 성공적으로 삭제되었습니다.");
+        deliveryAddressRepository.delete(deliveryAddress);
     }
 }
