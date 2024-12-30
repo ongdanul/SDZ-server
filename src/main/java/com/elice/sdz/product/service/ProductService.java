@@ -46,7 +46,7 @@ public class ProductService {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        Users user = userRepository.findById("admin@example.com")
+        Users user = userRepository.findById(productDTO.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Product 객체 생성
@@ -110,6 +110,7 @@ public class ProductService {
         product.setProductCount(productDTO.getProductCount());
         product.setProductContent(productDTO.getProductContent());
         product.setCategory(category);
+
 
         // 3. 삭제할 이미지 처리
         if (deletedImagePaths != null) {
