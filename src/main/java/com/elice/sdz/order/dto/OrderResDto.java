@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class OrderResDto {
     private Long orderId;       // 주문 ID
     private Double totalPrice;
     private boolean refundStatus; // 환불 상태 여부
-    private Instant regDate;    // 주문 날짜
+    private LocalDateTime regDate;    // 주문 날짜
     private Status orderStatus; // 주문 상태 (ENUM)
     private String email;       // 사용자 email
     private DeliveryAddressDTO deliveryAddress; // 배송 주소 추가

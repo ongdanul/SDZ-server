@@ -13,6 +13,8 @@ import com.elice.sdz.order.entity.OrderDetail;
 import com.elice.sdz.order.repository.OrderDetailRepository;
 import com.elice.sdz.order.repository.OrderRepository;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
+import com.elice.sdz.orderItem.entity.OrderItem;
+import com.elice.sdz.orderItem.entity.OrderItemDetail;
 import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,7 +112,7 @@ public class OrderService {
                 .refundStatus(orderReqDto.isRefundStatus())
                 .orderStatus(Order.Status.PENDING)
                 .orderDetails(orderDetails)
-                .regDate(Instant.now())
+                .regDate(LocalDateTime.now())
                 .build();
 
         // 배송 정보 설정
@@ -154,6 +157,15 @@ public class OrderService {
     public void deleteOrder(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+        OrderItemDetail orderItemDetail = new OrderItemDetail();
+        int quantity = orderItemDetail.getQuantity();
+        Product product = productRepository.findById(orderItemDetail.getProduct().getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // 재고 증가
+        product.setProductCount(product.getProductCount() + quantity);
+        productRepository.save(product);
+
         orderRepository.delete(order);
     }
 
