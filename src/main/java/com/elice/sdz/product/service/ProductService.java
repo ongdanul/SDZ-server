@@ -31,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -131,7 +130,7 @@ public class ProductService {
         // 5. 새로운 이미지 추가
         if (newImages != null && !newImages.isEmpty()) {
             for (MultipartFile newImage : newImages) {
-                String imagePath = imageService.saveImage(newImage, UPLOAD_DIR);
+                String imagePath = imageService.saveImage(newImage);
                 Image imageEntity = new Image(product, imagePath);
                 product.getImages().add(imageEntity);
             }
