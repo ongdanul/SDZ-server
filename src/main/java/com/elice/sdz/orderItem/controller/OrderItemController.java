@@ -45,4 +45,12 @@ public class OrderItemController {
         orderItemService.clearOrderItems(userId);
         return ResponseEntity.ok().build();
     }
+
+    // 게스트 장바구니 병합
+    @PostMapping("/merge")
+    public ResponseEntity<Void> mergeOrderItems(@RequestBody OrderItemDTO guestOrderItems) {
+        String userId = authenticationService.getCurrentUser();
+        orderItemService.mergeOrderItems(userId, guestOrderItems);
+        return ResponseEntity.ok().build();
+    }
 }
