@@ -3,6 +3,7 @@ package com.elice.sdz.orderItem.service;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
+import com.elice.sdz.orderItem.dto.OrderItemModifyDTO;
 import com.elice.sdz.orderItem.entity.OrderItem;
 import com.elice.sdz.orderItem.entity.OrderItemDetail;
 import com.elice.sdz.orderItem.repository.OrderItemDetailRepository;
@@ -181,5 +182,51 @@ public class OrderItemService {
         } else {
             return optionalOrderItem.get();
         }
+    }
+
+    // 게스트 장바구니 병합
+    @Transactional
+    public void mergeOrderItems(String userId, OrderItemDTO guestOrderItems) {
+        OrderItem userOrderItem = findOrCreateOrderItem(userId);
+
+        for (OrderItemDTO.OrderItemDetailDTO guestDetail : guestOrderItems.getOrderItemDetails()) {
+            Product product = findByProductId(guestDetail.getProductId());
+
+            Optional<OrderItemDetail> existingDetail = orderItemDetailRepository
+                    .findByOrderItemIdAndProduct(userOrderItem.getId(), product);
+
+            int finalQuantity;
+            if (existingDetail.isPresent()) {
+                // 이미 존재하는 상품이 있을 경우 수량 증가
+                OrderItemDetail detail = existingDetail.get();
+                finalQuantity = detail.getQuantity() + guestDetail.getQuantity();
+
+                // 서버 재고보다 많아지면 재고 수량으로 조정
+                if (finalQuantity > product.getProductCount()) {
+                    finalQuantity = product.getProductCount();
+                }
+
+                detail.setQuantity(finalQuantity);
+                orderItemDetailRepository.save(detail);
+            } else {
+                // 새 상품 추가
+                finalQuantity = guestDetail.getQuantity();
+
+                // 서버 재고보다 많아지면 재고 수량으로 조정
+                if (finalQuantity > product.getProductCount()) {
+                    finalQuantity = product.getProductCount();
+                }
+
+                OrderItemDetail newDetail = new OrderItemDetail();
+                newDetail.setOrderItem(userOrderItem);
+                newDetail.setProduct(product);
+                newDetail.setQuantity(finalQuantity);
+                newDetail.setProductAmount(product.getProductAmount());
+                orderItemDetailRepository.save(newDetail);
+            }
+        }
+
+        userOrderItem.updateTimestamp();
+        orderItemRepository.save(userOrderItem);
     }
 }
