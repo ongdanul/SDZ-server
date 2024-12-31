@@ -3,6 +3,8 @@ package com.elice.sdz.category.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class CategoryResponseDTO {
@@ -12,4 +14,6 @@ public class CategoryResponseDTO {
     private String categoryName;
 
     private Long parentId;
+
+    private List<CategoryResponseDTO> subCategories;
 }

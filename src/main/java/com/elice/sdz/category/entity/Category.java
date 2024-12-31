@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -29,15 +30,28 @@ public class Category extends BaseEntity {
     @Column(name = "parent_id", nullable = true)
     private Long parentId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
+    private Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL,
+            orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<Category> subCategories = new ArrayList<>();
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
-            orphanRemoval = false, fetch = FetchType.EAGER)
+            orphanRemoval = false, fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
 
     public CategoryResponseDTO toResponseDTO() {
+        List<CategoryResponseDTO> subCategoriesDTO = subCategories.stream()
+                .map(Category::toResponseDTO)
+                .collect(Collectors.toList());
+
         return CategoryResponseDTO.builder()
                 .categoryId(categoryId)
                 .categoryName(categoryName)
                 .parentId(parentId)
+                .subCategories(subCategoriesDTO)
                 .build();
     }
 }
