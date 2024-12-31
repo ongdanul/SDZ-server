@@ -8,6 +8,7 @@ import com.elice.sdz.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -84,6 +85,7 @@ public class CustomSecurityConfig {
 
         //접근 권한 설정
         http.authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.OPTIONS).denyAll()
                         .requestMatchers(SWAGGER).permitAll()
                         .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/categories/**", "/api/orders/**", "/api/order-item/**", "/api/products/**", "/api/deliveryAddress/**", "/api/user/**").permitAll()

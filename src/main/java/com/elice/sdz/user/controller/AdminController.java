@@ -1,8 +1,8 @@
 package com.elice.sdz.user.controller;
 
 import com.elice.sdz.user.controller.apiDocs.AdminApiDocs;
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
 import com.elice.sdz.user.service.AdminService;
 import lombok.RequiredArgsConstructor;
