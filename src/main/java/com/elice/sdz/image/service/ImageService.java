@@ -74,7 +74,7 @@ public class ImageService {
     }
 
     public void deleteImage(Image image) {
-        String localFilePath = "src/main/resources/static" + image.getImagePath();
+        String localFilePath = "/home/kdt/backend" + image.getImagePath();
         deleteLocalFile(localFilePath);
         imageRepository.delete(image);
     }
