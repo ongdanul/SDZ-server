@@ -1,11 +1,13 @@
 package com.elice.sdz.order.service;
 
+import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.entity.Delivery;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.delivery.repository.DeliveryAddressRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
-import com.elice.sdz.order.dto.OrderDto;
+import com.elice.sdz.order.dto.OrderReqDto;
+import com.elice.sdz.order.dto.OrderResDto;
 import com.elice.sdz.order.entity.Order;
 import com.elice.sdz.order.entity.OrderDetail;
 import com.elice.sdz.order.repository.OrderDetailRepository;
@@ -41,34 +43,40 @@ public class OrderService {
 
     //사용자 주문 목록 조회
     @Transactional(readOnly = true)
-    public List<OrderDto> getOrdersByUserId(String userId) {
-        //Users user = userRepository.findById(String.valueOf(userId))
-                //.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        return orderRepository.findByUserEmail(userId).stream().map(this::toDto).collect(Collectors.toList());
+    public List<OrderResDto> getOrdersByUserId(String userId) {
+        return orderRepository.findByUserEmail(userId).stream().map(this::toResDto).collect(Collectors.toList());
     }
     //특정(주문Id) 주문 상세 조회
     @Transactional(readOnly = true)
-    public OrderDto findOrderById(Long orderId) {
+    public OrderResDto findOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
-        return toDto(order);
+        return toResDto(order);
     }
 
     //사용자 주문 추가
     @Transactional
-    public OrderDto createOrder(OrderDto orderDto, String userId) {
+    public OrderResDto createOrder(OrderReqDto orderReqDto, String userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        if (orderDto.getOrderItems() == null || orderDto.getOrderItems().isEmpty()) {
+        if (orderReqDto.getOrderItems() == null || orderReqDto.getOrderItems().isEmpty()) {
             throw new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND);
         }
         // 주문 세부 정보 리스트 생성
         List<OrderDetail> orderDetails = new ArrayList<>();
-        for (OrderItemDTO orderItem : orderDto.getOrderItems()) {
+        for (OrderItemDTO orderItem : orderReqDto.getOrderItems()) {
             for (OrderItemDTO.OrderItemDetailDTO orderItemDetail : orderItem.getOrderItemDetails()) {
                 int quantity = orderItemDetail.getQuantity();
                 Product product = productRepository.findById(orderItemDetail.getProductId())
                         .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                if (product.getProductCount() < quantity) {
+                    throw new CustomException(ErrorCode.OUT_OF_STOCK);  // 재고 부족 예외
+                }
+                // 재고 감소
+                product.setProductCount(product.getProductCount() - quantity);
+                productRepository.save(product);  // 변경된 상품 정보 저장
+
                 OrderDetail orderDetail = OrderDetail.builder()
                         .orderCount(quantity)
                         .orderAmount(orderItemDetail.getProductAmount()) // 상품 가격
@@ -76,17 +84,18 @@ public class OrderService {
                         .build();
                 orderDetails.add(orderDetail);
             }
+
         }
         // 배송 주소 생성 및 저장
         DeliveryAddress deliveryAddress = new DeliveryAddress();
         deliveryAddress.setUser(user);
-        deliveryAddress.setDeliveryAddressId(orderDto.getDeliveryAddress().getDeliveryAddressId());
-        deliveryAddress.setDeliveryAddress1(orderDto.getDeliveryAddress().getDeliveryAddress1());
-        deliveryAddress.setDeliveryAddress2(orderDto.getDeliveryAddress().getDeliveryAddress2());
-        deliveryAddress.setDeliveryAddress3(orderDto.getDeliveryAddress().getDeliveryAddress3());
-        deliveryAddress.setReceiverName(orderDto.getDeliveryAddress().getReceiverName());
-        deliveryAddress.setReceiverContact(orderDto.getDeliveryAddress().getReceiverContact());
-        deliveryAddress.setDeliveryRequest(orderDto.getDeliveryAddress().getDeliveryRequest());
+        deliveryAddress.setDeliveryAddressId(orderReqDto.getDeliveryAddress().getDeliveryAddressId());
+        deliveryAddress.setDeliveryAddress1(orderReqDto.getDeliveryAddress().getDeliveryAddress1());
+        deliveryAddress.setDeliveryAddress2(orderReqDto.getDeliveryAddress().getDeliveryAddress2());
+        deliveryAddress.setDeliveryAddress3(orderReqDto.getDeliveryAddress().getDeliveryAddress3());
+        deliveryAddress.setReceiverName(orderReqDto.getDeliveryAddress().getReceiverName());
+        deliveryAddress.setReceiverContact(orderReqDto.getDeliveryAddress().getReceiverContact());
+        deliveryAddress.setDeliveryRequest(orderReqDto.getDeliveryAddress().getDeliveryRequest());
         deliveryAddress.setDefaultCheck(false);
 
 
@@ -96,8 +105,8 @@ public class OrderService {
         // 주문 객체 생성
         Order order = Order.builder()
                 .user(user)
-                .totalPrice(orderDto.getTotalPrice())
-                .refundStatus(orderDto.isRefundStatus())
+                .totalPrice(orderReqDto.getTotalPrice())
+                .refundStatus(orderReqDto.isRefundStatus())
                 .orderStatus(Order.Status.PENDING)
                 .orderDetails(orderDetails)
                 .regDate(Instant.now())
@@ -116,12 +125,12 @@ public class OrderService {
         }
         // 주문 저장
         Order savedOrder = orderRepository.save(order);
-        return toDto(savedOrder);
+        return toResDto(savedOrder);
     }
 
     //사용자 주문 수정
     @Transactional
-    public OrderDto updateOrder(Long id, OrderDto orderDto) {
+    public OrderResDto updateOrder(Long id, OrderReqDto orderReqDto) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -133,11 +142,11 @@ public class OrderService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
 
 
-        order.setRefundStatus(orderDto.isRefundStatus());
+        order.setRefundStatus(orderReqDto.isRefundStatus());
 
         orderDetailRepository.save(orderDetail);
         Order updatedOrder = orderRepository.save(order);
-        return toDto(updatedOrder);
+        return toResDto(updatedOrder);
     }
 
     //사용자 주문취소
@@ -150,23 +159,25 @@ public class OrderService {
 
     //관리자 모든 주문 조회
     @Transactional(readOnly = true)
-    public List<OrderDto> findAllOrders() {
+    public List<OrderResDto> findAllOrders() {
         return orderRepository.findAll().stream()
-                .map(this::toDto)
+                .map(this::toResDto)
                 .collect(Collectors.toList());
     }
 
     //관리자 주문 상태수정
     @Transactional
-    public OrderDto updateOrderStatus(Long id, Order.Status status) {
+    public OrderResDto updateOrderStatus(Long id, Order.Status status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
         order.setOrderStatus(status);
-        return toDto(orderRepository.save(order));
+        return toResDto(orderRepository.save(order));
     }
     //Entity->toDto 변환
-    private OrderDto toDto(Order order) {
-        OrderDto dto = new OrderDto();
+    private OrderResDto toResDto(Order order) {
+        OrderResDto dto = new OrderResDto();
+
+
 
         // 기본 필드 매핑
         dto.setOrderId(order.getOrderId());
@@ -176,16 +187,30 @@ public class OrderService {
         dto.setOrderStatus(order.getOrderStatus());
         dto.setEmail(order.getUser().getEmail());
 
-        // OrderItemDTO 리스트 생성
-        List<OrderItemDTO> orderItems = new ArrayList<>();
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            OrderItemDTO orderItemDTO = createOrderItemDTO(orderDetail);
-            orderItems.add(orderItemDTO);
+        if (order.getUser() != null) {
+            dto.setEmail(order.getUser().getEmail());
         }
-
+        // OrderItemDTO 리스트 생성
+        List<OrderItemDTO> orderItems = order.getOrderDetails().stream()
+                .map(this::createOrderItemDTO)
+                .collect(Collectors.toList());
         dto.setOrderItems(orderItems);
 
+        if (order.getDelivery() != null && order.getDelivery().getDeliveryAddress() != null) {
+            dto.setDeliveryAddress(toDeliveryAddressDto(order.getDelivery().getDeliveryAddress()));
+        }
         return dto;
+    }
+    private DeliveryAddressDTO toDeliveryAddressDto(DeliveryAddress deliveryAddress) {
+        return DeliveryAddressDTO.builder()
+                .deliveryAddressId(deliveryAddress.getDeliveryAddressId())
+                .deliveryAddress1(deliveryAddress.getDeliveryAddress1())
+                .deliveryAddress2(deliveryAddress.getDeliveryAddress2())
+                .deliveryAddress3(deliveryAddress.getDeliveryAddress3())
+                .receiverName(deliveryAddress.getReceiverName())
+                .receiverContact(deliveryAddress.getReceiverContact())
+                .deliveryRequest(deliveryAddress.getDeliveryRequest())
+                .build();
     }
 
     private OrderItemDTO createOrderItemDTO(OrderDetail orderDetail) {
@@ -196,12 +221,14 @@ public class OrderService {
 
         // OrderDetail에서 OrderItemDetailDTO로 변환
         OrderItemDTO.OrderItemDetailDTO orderItemDetailDTO = new OrderItemDTO.OrderItemDetailDTO();
-        orderItemDetailDTO.setProductId(orderDetail.getProduct().getProductId());  // 제품 ID
-        orderItemDetailDTO.setQuantity(orderDetail.getOrderCount());  // 주문 수량
-        orderItemDetailDTO.setProductName(orderDetail.getProduct().getProductName());  // 제품 이름
-        orderItemDetailDTO.setProductAmount(orderDetail.getOrderAmount());  // 주문 금액
-        orderItemDetailDTO.setThumbnailPath(orderDetail.getProduct().getThumbnailPath());  // 썸네일 경로
+        if (orderDetail.getProduct() != null) {
+            orderItemDetailDTO.setProductId(orderDetail.getProduct().getProductId());  // 제품 ID
+            orderItemDetailDTO.setProductName(orderDetail.getProduct().getProductName());  // 제품 이름
+            orderItemDetailDTO.setThumbnailPath(orderDetail.getProduct().getThumbnailPath());  // 썸네일 경로
+        }
 
+        orderItemDetailDTO.setQuantity(orderDetail.getOrderCount());  // 주문 수량
+        orderItemDetailDTO.setProductAmount(orderDetail.getOrderAmount());  // 주문 금액
         // 변환된 OrderItemDetailDTO를 orderItemDetails 리스트에 추가
         orderItemDetails.add(orderItemDetailDTO);
 
