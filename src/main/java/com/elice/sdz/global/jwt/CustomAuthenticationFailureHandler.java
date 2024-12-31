@@ -32,36 +32,32 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         String email = loginRequest.getEmail();
 
         // 로그인 실패 처리: 실패 횟수 증가 및 잠금 여부 처리
-        boolean isLocked = handleLoginFailure(response, email);
-        // 이미 잠금된 계정인 경우
-        if (isLocked) {
-            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
-        } else {
-            sendResponse(response, ErrorCode.LOGIN_FAILED.getHttpStatus(), ErrorCode.LOGIN_FAILED.getMessage());
-        }
+        handleLoginFailure(response, email);
     }
 
-    public boolean handleLoginFailure(HttpServletResponse response, String email) throws  IOException {
+    public void handleLoginFailure(HttpServletResponse response, String email) throws  IOException {
         final int MAX_ATTEMPTS = 5;
 
         Optional<Users> optionalUser = userRepository.findById(email);
         if (optionalUser.isEmpty()) {
             sendResponse(response, ErrorCode.USER_NOT_FOUND.getHttpStatus(), ErrorCode.USER_NOT_FOUND.getMessage());
-            return false;
+            return;
         }
         Users user = optionalUser.get();
 
         // 계정이 이미 잠금 상태인 경우
         if (user.isLoginLock()) {
             log.error("로그인 잠금된 아이디입니다.: {} ", email);
-            return true;
+            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
+            return;
         }
 
         // 현재 실패 횟수로 계정 잠금 여부 검증 (MAX_ATTEMPTS 이상이면 잠금)
         if (user.getLoginAttempts() >= MAX_ATTEMPTS) {
             user.setLoginLock(true);
             updateUserState(response, user);
-            return true;
+            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
+            return;
         }
 
         // 실패 횟수 증가
@@ -73,11 +69,12 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         if (attempts >= MAX_ATTEMPTS) {
             user.setLoginLock(true);
             updateUserState(response, user);
-            return true;
+            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
+            return;
         }
 
         updateUserState(response, user);
-        return false;
+        sendResponse(response, ErrorCode.LOGIN_FAILED.getHttpStatus(), ErrorCode.LOGIN_FAILED.getMessage());
     }
 
     private void sendResponse(HttpServletResponse response, HttpStatus statusCode, String message) throws IOException {

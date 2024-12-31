@@ -26,15 +26,17 @@ public class AccountController implements AccountApiDocs {
     private final AccountService accountService;
 
     @PostMapping("/find-id")
-    public ResponseEntity<List<UserAccountDTO>> findId(@RequestBody AccountRequestDTO request) {
+    public ResponseEntity<AccountResponseDTO> findId(@RequestBody AccountRequestDTO request) {
         String userName = request.getUserName();
         String contact = request.getContact();
 
         List<UserAccountDTO> emails = accountService.findByEmail(userName, contact);
+        AccountResponseDTO response = new AccountResponseDTO();
+        response.setEmails(emails);
         if (emails.isEmpty()) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+            response.setMessage("일치하는 회원정보가 존재하지않습니다.");
         }
-        return ResponseEntity.ok(emails);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/find-pw")

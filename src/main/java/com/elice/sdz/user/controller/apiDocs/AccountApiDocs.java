@@ -13,7 +13,7 @@ import java.util.Map;
 public interface AccountApiDocs {
 
     @Operation(summary = "일반 회원 아이디 찾기", description = "일반 회원 아이디 찾기를 처리하는 API입니다.")
-    ResponseEntity<List<UserAccountDTO>> findId(@RequestBody AccountRequestDTO request);
+    ResponseEntity<AccountResponseDTO> findId(@RequestBody AccountRequestDTO request);
 
     @Operation(summary = "일반 회원 비밀번호 찾기", description = "일반 회원 비밀번호 찾기를 처리하는 API입니다.")
     ResponseEntity<AccountResponseDTO> findPw(@RequestBody AccountRequestDTO request);
