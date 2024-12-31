@@ -3,6 +3,7 @@ package com.elice.sdz.product.controller;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.service.ProductService;
+import com.elice.sdz.user.service.AuthenticationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductController {
 
     private final ProductService productService;
+    private final AuthenticationService authenticationService;
 
     // 상품 목록 조회
     @GetMapping
@@ -50,7 +52,7 @@ public class ProductController {
             // JSON 문자열을 ProductDTO 객체로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
-
+            productDTO.setUserId(authenticationService.getCurrentUser());
             // 서비스 호출
             ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images, thumbnail);
             return new ResponseEntity<>(productResponseDTO, HttpStatus.CREATED);
@@ -70,7 +72,7 @@ public class ProductController {
             // JSON 문자열을 ProductDTO 객체로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
-
+            productDTO.setUserId(authenticationService.getCurrentUser());
             // deletedImagePaths JSON 파싱
             List<String> deletedImagePaths = objectMapper.readValue(
                     deletedImagePathsJson, new TypeReference<List<String>>() {});
