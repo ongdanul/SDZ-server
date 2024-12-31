@@ -28,5 +28,7 @@ public class OrderResDto {
     private Status orderStatus; // 주문 상태 (ENUM)
     private String email;       // 사용자 email
     private DeliveryAddressDTO deliveryAddress; // 배송 주소 추가
+
+    @Builder.Default
     private List<OrderItemDTO> orderItems = new ArrayList<>();
 }

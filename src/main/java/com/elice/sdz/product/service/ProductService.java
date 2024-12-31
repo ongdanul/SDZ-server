@@ -39,6 +39,7 @@ public class ProductService {
     private final OrderItemDetailRepository orderItemDetailRepository;
 
     // Product 생성
+    @Transactional
     public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images, MultipartFile thumbnail)
             throws IOException {
         // Category와 User를 ID로 받아와 조회
@@ -72,6 +73,7 @@ public class ProductService {
     }
 
     // Product 조회
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -79,6 +81,7 @@ public class ProductService {
     }
 
     // 모든 Product 조회
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
         List<Product> products = productRepository.findAll();
 
@@ -164,11 +167,28 @@ public class ProductService {
 
 
     // 특정 카테고리의 Product 조회
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        List<Product> products = productRepository.findByCategory(category);
+        List<Product> products;
+
+        // 루트 카테고리인 경우 서브 카테고리 상품까지 조회
+        if (category.getParentId() == null) {
+            List<Category> subCategories = categoryRepository.findByParentId(categoryId);
+            subCategories.add(category);
+
+            products = productRepository.findByCategoryIn(subCategories);
+
+            // 루트 카테고리와 서브 카테고리에 상품이 없을 경우
+            if (products.isEmpty()) {
+                products = productRepository.findByCategory(category);
+            }
+        } else {
+            // 서버 카테고리일 경우 서브 카테고리만 조회
+            products = productRepository.findByCategory(category);
+        }
 
         // Stream 대신 for 루프 사용
         List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
