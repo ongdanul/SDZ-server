@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOGS" value="/home/kdt/backend/log" />
+
+    <springProfile name="dev">
+        <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="console" />
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOGS}/app.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOGS}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>5MB</maxFileSize>
+                <maxHistory>7</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} - %level - %logger{36}%n%msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="file" />
+        </root>
+    </springProfile>
+</configuration>
