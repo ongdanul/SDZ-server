@@ -13,11 +13,15 @@ import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -79,12 +83,26 @@ public class ProductService {
     }
 
     // 모든 Product 조회
-    public List<ProductResponseDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll();
+    public PageResponseDTO<ProductResponseDTO> getAllProducts(PageRequestDTO pageRequestDTO) {
+        // Pageable 객체 생성, 정렬 필드 지정
+        Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
+        String keyword = pageRequestDTO.getKeyword();
 
-        return products.stream()
+        // 검색어가 포함된 상품만 조회
+        Page<Product> result = productRepository.findAllByKeyword(keyword, pageable);
+
+        // PageResponseDTO 객체 생성
+        List<ProductResponseDTO> dtoList = result.getContent()
+                .stream()
                 .map(Product::toResponseDTO)
                 .collect(Collectors.toList());
+
+        return PageResponseDTO.<ProductResponseDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
+                .total((int) result.getTotalElements())
+                .keyword(keyword) // 검색어 정보도 포함
+                .build();
     }
 
     // Product 수정
