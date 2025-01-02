@@ -51,6 +51,9 @@ dependencies {
 
 	// slf4j
 	implementation 'org.springframework.boot:spring-boot-starter-logging'
+	implementation 'ch.qos.logback:logback-classic'
+	implementation 'ch.qos.logback:logback-core'
+	implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
 
 	// 임시 비밀번호 발급 (메일)
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
