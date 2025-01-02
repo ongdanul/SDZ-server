@@ -6,6 +6,8 @@ import com.elice.sdz.user.dto.request.PageRequestDTO;
 import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
 import com.elice.sdz.user.entity.Users;
+import com.elice.sdz.user.repository.RefreshRepository;
+import com.elice.sdz.user.repository.SocialRepository;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final SocialRepository socialRepository;
+    private final RefreshRepository refreshRepository;
 
     public PageResponseDTO<UserListDTO> searchUserList(PageRequestDTO pageRequestDTO) {
         Pageable pageable = pageRequestDTO.getPageable("createdAt");
@@ -109,6 +113,17 @@ public class AdminService {
             throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
         }
 
+        if(user.isSocial()){
+            socialRepository.deleteByUser(user);
+        }
+
+        try {
+            refreshRepository.deleteAllByEmail(email);
+        } catch (Exception e) {
+            log.error("회원 {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", email, e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
         userRepository.delete(user);
     }
 
@@ -131,6 +146,21 @@ public class AdminService {
 
         if (adminCountInDeleteList > 0 && totalAdminCount - adminCountInDeleteList <= 1) {
             throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
+        }
+
+        for (Users user : users) {
+            if (user.isSocial()) {
+                socialRepository.deleteByUser(user);
+            }
+        }
+
+        for (String email : emails) {
+            try {
+                refreshRepository.deleteAllByEmail(email);
+            } catch (Exception e) {
+                log.error("회원 {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", email, e);
+                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
         }
 
         userRepository.deleteAllByEmailIn(emails);
