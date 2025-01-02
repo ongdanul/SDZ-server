@@ -83,6 +83,7 @@ public class ProductService {
     }
 
     // 모든 Product 조회
+    @Transactional(readOnly = true)
     public PageResponseDTO<ProductResponseDTO> getAllProducts(PageRequestDTO pageRequestDTO) {
         // Pageable 객체 생성, 정렬 필드 지정
         Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
