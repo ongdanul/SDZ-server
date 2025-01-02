@@ -62,3 +62,5 @@ spring:
 logging:
   level:
     root: INFO
+  file:
+    name: /home/kdt/backend/log/app.log
