@@ -8,6 +8,7 @@ import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class CategoryService {
     private final long CAPACITY = 5;
     private final CategoryRepository categoryRepository;
 
+    @Transactional
     public CategoryResponseDTO createCategory(CategoryRequestDTO categoryRequestDTO) {
         Category newCategory = categoryRequestDTO.toEntity();
         int categoryCount = categoryRepository.countByParentIdNull();
@@ -33,6 +35,7 @@ public class CategoryService {
         return categoryRepository.save(newCategory).toResponseDTO();
     }
 
+    @Transactional
     public CategoryResponseDTO createChildCategory(CategoryRequestDTO categoryRequestDTO) {
         Category newCategory = categoryRequestDTO.toEntity();
         int childCategoryCount = categoryRepository.countByParentId(newCategory.getParentId());
@@ -48,10 +51,12 @@ public class CategoryService {
         return categoryRepository.save(newCategory).toResponseDTO();
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponseDTO> getAllCategories() {
         return categoryRepository.findAll().stream().map(Category::toResponseDTO).toList();
     }
 
+    @Transactional(readOnly = true)
     public CategoryResponseDTO getCategoryById(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -59,6 +64,7 @@ public class CategoryService {
         return category.toResponseDTO();
     }
 
+    @Transactional
     public CategoryResponseDTO updateCategory(Long categoryId, CategoryRequestDTO categoryRequestDTO) {
         Category existingCategory = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -72,6 +78,7 @@ public class CategoryService {
         return categoryRepository.save(existingCategory).toResponseDTO();
     }
 
+    @Transactional
     public void deleteCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));

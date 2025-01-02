@@ -36,6 +36,7 @@ public class OrderController {
     //특정 주문 상세 조회
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResDto> getOrderDetail(@PathVariable Long orderId) {
+
         return ResponseEntity.ok(orderService.findOrderById(orderId));
     }
 

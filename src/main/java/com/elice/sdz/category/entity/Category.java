@@ -30,22 +30,23 @@ public class Category extends BaseEntity {
     @Column(name = "parent_id", nullable = true)
     private Long parentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     private Category parentCategory;
 
-    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL,
-            orphanRemoval = false, fetch = FetchType.LAZY)
+    @Builder.Default
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Category> subCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL,
-            orphanRemoval = false, fetch = FetchType.LAZY)
+    @Builder.Default
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Product> products = new ArrayList<>();
 
     public CategoryResponseDTO toResponseDTO() {
-        List<CategoryResponseDTO> subCategoriesDTO = subCategories.stream()
+        List<CategoryResponseDTO> subCategoriesDTO = (subCategories != null
+                ? subCategories.stream()
                 .map(Category::toResponseDTO)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : new ArrayList<>());
 
         return CategoryResponseDTO.builder()
                 .categoryId(categoryId)

@@ -14,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class ImageService {
 
 //    String uploadsDir = "src/main/resources/static/uploads/";
 
+    @Transactional
     public String uploadImage(Product product, List<MultipartFile> images, MultipartFile thumbnail) {
         String thumbnailPath = null; // 썸네일 경로를 저장할 변수
 
@@ -58,6 +60,7 @@ public class ImageService {
         return thumbnailPath; // 썸네일 경로 반환
     }
 
+    @Transactional
     public String saveImage(MultipartFile image) throws IOException {
         // 파일 이름 생성
         String fileName = UUID.randomUUID().toString().replace("-", "");
@@ -73,12 +76,14 @@ public class ImageService {
         return dbFilePath;
     }
 
+    @Transactional
     public void deleteImage(Image image) {
         String localFilePath = "/home/kdt/backend" + image.getImagePath();
         deleteLocalFile(localFilePath);
         imageRepository.delete(image);
     }
 
+    @Transactional
     public void deleteLocalFile(String filePath) {
         try {
             Path path = Paths.get(filePath);
