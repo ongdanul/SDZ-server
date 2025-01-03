@@ -20,7 +20,7 @@
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.util.StringUtils;
 
-    import static com.elice.sdz.global.config.SecurityConstants.REFRESH_COOKIE_NAME;
+    import static com.elice.sdz.global.config.SecurityConstants.*;
 
     @Slf4j
     @Service
@@ -127,5 +127,7 @@
                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
             CookieUtil.deleteCookie(response, REFRESH_COOKIE_NAME);
+            CookieUtil.deleteCookie(response, REMEMBER_ID_COOKIE_NAME);
+            CookieUtil.deleteCookie(response, REMEMBER_ME_COOKIE_NAME);
         }
     }
