@@ -20,6 +20,8 @@
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.util.StringUtils;
 
+    import java.time.Instant;
+
     import static com.elice.sdz.global.config.SecurityConstants.*;
 
     @Slf4j
@@ -27,7 +29,6 @@
     @RequiredArgsConstructor
     public class UserService {
 
-        private final SocialRepository socialRepository;
         private final RefreshRepository refreshRepository;
         private final UserRepository userRepository;
         private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -111,15 +112,10 @@
             Users user = userRepository.findById(email)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            if(user.isSocial()){
-                socialRepository.deleteByUser(user);
-            }
+            user.setDeactivated(true);
+            user.setDeactivationTime(Instant.now());
+            userRepository.save(user);
 
-            if(user.getUserAuth().equals(Users.Auth.ROLE_ADMIN) && userRepository.countByRoleAdmin()<=1) {
-                throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
-            }
-
-            userRepository.delete(user);
             try {
                 refreshRepository.deleteAllByEmail(email);
             } catch (Exception e) {

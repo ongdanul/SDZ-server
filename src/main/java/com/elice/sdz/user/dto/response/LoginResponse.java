@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 public class LoginResponse {
 
     private HttpStatus httpStatus;
+
+    private String errorCode;
+
     private String message;
 
 }

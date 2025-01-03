@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "delivery")
-public class Delivery extends BaseEntity {
+    public class Delivery extends BaseEntity {
 
     @Id
     @Column(name = "delivery_id")

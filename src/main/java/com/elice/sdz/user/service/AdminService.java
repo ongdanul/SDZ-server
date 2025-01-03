@@ -7,7 +7,6 @@ import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
-import com.elice.sdz.user.repository.SocialRepository;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UserRepository userRepository;
-    private final SocialRepository socialRepository;
     private final RefreshRepository refreshRepository;
 
     public PageResponseDTO<UserListDTO> searchUserList(PageRequestDTO pageRequestDTO) {
@@ -59,27 +58,27 @@ public class AdminService {
 
     private Page<Users> getUserListByType(String type, Pageable pageable) {
         if (type == null || type.isEmpty() || "all".equals(type)) {
-            return userRepository.findAll(pageable);
+            return userRepository.findAllByDeactivatedFalse(pageable);
         }
 
         return switch (type) {
-            case "local" -> userRepository.findBySocialFalse(pageable);
-            case "social" -> userRepository.findBySocialTrue(pageable);
+            case "local" -> userRepository.findBySocialFalseAndDeactivatedFalse(pageable);
+            case "social" -> userRepository.findBySocialTrueAndDeactivatedFalse(pageable);
             default -> throw new CustomException(ErrorCode.INVALID_TYPE);
         };
     }
 
     private Page<Users> getUserListByKeywordAndType(String keyword, String type, Pageable pageable) {
         if ("all".equals(type)) {
-            return userRepository.findByEmailContaining(keyword, pageable);
+            return userRepository.findByEmailContainingAndDeactivatedFalse(keyword, pageable);
         }
 
         if ("local".equals(type)) {
-            return userRepository.findByEmailContainingAndSocialFalse(keyword, pageable);
+            return userRepository.findByEmailContainingAndSocialFalseAndDeactivatedFalse(keyword, pageable);
         }
 
         if ("social".equals(type)) {
-            return userRepository.findByEmailContainingAndSocialTrue(keyword, pageable);
+            return userRepository.findByEmailContainingAndSocialTrueAndDeactivatedFalse(keyword, pageable);
         }
         throw new CustomException(ErrorCode.INVALID_TYPE);
     }
@@ -113,9 +112,9 @@ public class AdminService {
             throw new CustomException(ErrorCode.ADMIN_USER_EXISTS);
         }
 
-        if(user.isSocial()){
-            socialRepository.deleteByUser(user);
-        }
+        user.setDeactivated(true);
+        user.setDeactivationTime(Instant.now());
+        userRepository.save(user);
 
         try {
             refreshRepository.deleteAllByEmail(email);
@@ -123,8 +122,6 @@ public class AdminService {
             log.error("회원 {} 에 대한 리프레시 토큰 삭제 중 오류가 발생했습니다.", email, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
-
-        userRepository.delete(user);
     }
 
     @Transactional
@@ -149,9 +146,9 @@ public class AdminService {
         }
 
         for (Users user : users) {
-            if (user.isSocial()) {
-                socialRepository.deleteByUser(user);
-            }
+            user.setDeactivated(true);
+            user.setDeactivationTime(Instant.now());
+            userRepository.save(user);
         }
 
         for (String email : emails) {
@@ -162,7 +159,5 @@ public class AdminService {
                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
         }
-
-        userRepository.deleteAllByEmailIn(emails);
     }
 }

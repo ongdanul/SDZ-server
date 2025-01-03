@@ -6,10 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface UserRepository extends JpaRepository<Users, String> {
     long countByUserNameAndContact(String userName, String contact);
 
@@ -26,12 +29,15 @@ public interface UserRepository extends JpaRepository<Users, String> {
     boolean existsByEmailAndUserName(String email, String userName);
 
     //Admin
-    Page<Users> findBySocialTrue(Pageable pageable);
-    Page<Users> findBySocialFalse(Pageable pageable);
-    Page<Users> findByEmailContaining(String email, Pageable pageable);
-    Page<Users> findByEmailContainingAndSocialTrue(String email, Pageable pageable);
-    Page<Users> findByEmailContainingAndSocialFalse(String email, Pageable pageable);
-    void deleteAllByEmailIn(List<String> emails);
+    Page<Users> findAllByDeactivatedFalse(Pageable pageable);
+    Page<Users> findBySocialTrueAndDeactivatedFalse(Pageable pageable);
+    Page<Users> findBySocialFalseAndDeactivatedFalse(Pageable pageable);
+    Page<Users> findByEmailContainingAndDeactivatedFalse(String email, Pageable pageable);
+    Page<Users> findByEmailContainingAndSocialTrueAndDeactivatedFalse(String email, Pageable pageable);
+    Page<Users> findByEmailContainingAndSocialFalseAndDeactivatedFalse(String email, Pageable pageable);
     @Query("SELECT COUNT(u) FROM Users u WHERE u.userAuth = 'ROLE_ADMIN'")
     long countByRoleAdmin();
+
+    //Scheduler
+    List<Users> findByDeactivatedTrueAndDeactivationTimeBefore(Instant deactivationTime);
 }

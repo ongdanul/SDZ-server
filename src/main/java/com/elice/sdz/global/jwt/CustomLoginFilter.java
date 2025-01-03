@@ -71,7 +71,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain, Authentication authentication) throws IOException, ServletException {
         LoginRequest loginRequest = (LoginRequest) request.getAttribute("loginRequest");
         if (loginRequest == null) {
-            sendResponse(response, ErrorCode.INVALID_LOGIN_REQUEST.getHttpStatus(), ErrorCode.INVALID_LOGIN_REQUEST.getMessage());
+            sendResponse(response, ErrorCode.INVALID_LOGIN_REQUEST.getHttpStatus(), ErrorCode.INVALID_LOGIN_REQUEST.getErrorCode(), ErrorCode.INVALID_LOGIN_REQUEST.getMessage());
             return;
         }
 
@@ -82,14 +82,14 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
                 .findFirst()
                 .map(GrantedAuthority::getAuthority);
         if (optionalRole.isEmpty()) {
-            sendResponse(response, ErrorCode.MISSING_AUTHORIZATION.getHttpStatus(), ErrorCode.MISSING_AUTHORIZATION.getMessage());
+            sendResponse(response, ErrorCode.MISSING_AUTHORIZATION.getHttpStatus(), ErrorCode.MISSING_AUTHORIZATION.getErrorCode(), ErrorCode.MISSING_AUTHORIZATION.getMessage());
             return;
         }
         String role = optionalRole.get();
 
         Optional<Users> optionalUser = userRepository.findById(email);
         if (optionalUser.isEmpty()) {
-            sendResponse(response, ErrorCode.USER_NOT_FOUND.getHttpStatus(), ErrorCode.USER_NOT_FOUND.getMessage());
+            sendResponse(response, ErrorCode.USER_NOT_FOUND.getHttpStatus(), ErrorCode.USER_NOT_FOUND.getErrorCode(), ErrorCode.USER_NOT_FOUND.getMessage());
             return;
         }
         Users user = optionalUser.get();
@@ -109,7 +109,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         response.setHeader("Authorization", "Bearer " + access);
         CookieUtil.createCookie(response,REFRESH_COOKIE_NAME, refresh, REFRESH_COOKIE_EXPIRATION);
-        sendResponse(response, HttpStatus.valueOf(HttpStatus.OK.value()), "로그인이 성공적으로 처리되었습니다.");
+        sendResponse(response, HttpStatus.valueOf(HttpStatus.OK.value()), "LOGIN_SUCCESS" ,"로그인이 성공적으로 처리되었습니다.");
 
         handleCookie(response, loginRequest, email, refresh);
     }
@@ -124,14 +124,20 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     private boolean isUserLoginLocked(HttpServletResponse response, Users user) throws IOException {
         if (user.isLoginLock()) {
             log.info("회원 아이디가 잠금 상태입니다: {}", user.getEmail());
-            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getMessage());
+            sendResponse(response, ErrorCode.LOGIN_LOCKED.getHttpStatus(), ErrorCode.LOGIN_LOCKED.getErrorCode(), ErrorCode.LOGIN_LOCKED.getMessage());
+            return true;
+        }
+        if(user.isDeactivated()){
+            log.info("회원 탈퇴된 아이디입니다: {}", user.getEmail());
+            sendResponse(response, ErrorCode.LOGIN_DEACTIVATED.getHttpStatus(), ErrorCode.LOGIN_DEACTIVATED.getErrorCode(), ErrorCode.LOGIN_DEACTIVATED.getMessage());
             return true;
         }
         return false;
     }
-    private void sendResponse(HttpServletResponse response, HttpStatus statusCode, String message) throws IOException {
+    private void sendResponse(HttpServletResponse response, HttpStatus statusCode, String errorCode, String message) throws IOException {
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setHttpStatus(statusCode);
+        loginResponse.setErrorCode(errorCode);
         loginResponse.setMessage(message);
 
         response.setContentType("application/json");
