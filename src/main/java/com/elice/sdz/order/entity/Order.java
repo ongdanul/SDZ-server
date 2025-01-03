@@ -36,7 +36,7 @@ public class Order extends BaseEntity {
 
     //주문 날짜 필드
     @Column(name = "reg_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime regDate;
+    private String regDate;
 
     @ManyToOne //다대일
     @JoinColumn(name = "email", referencedColumnName = "email", nullable = false) // 외래 키 컬럼을 지정
