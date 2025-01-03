@@ -186,36 +186,42 @@ public class ProductService {
 
     // 특정 카테고리의 Product 조회
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
+    public PageResponseDTO<ProductResponseDTO> getProductsByCategory(Long categoryId, PageRequestDTO pageRequestDTO) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        List<Product> products;
+        Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
+        Page<Product> result;
 
-        // 루트 카테고리인 경우 서브 카테고리 상품까지 조회
         if (category.getParentId() == null) {
+            // 루트 카테고리인 경우 서브 카테고리 상품까지 조회
             List<Category> subCategories = categoryRepository.findByParentId(categoryId);
             subCategories.add(category);
 
-            products = productRepository.findByCategoryIn(subCategories);
+            result = productRepository.findByCategoryIn(subCategories, pageable);
 
             // 루트 카테고리와 서브 카테고리에 상품이 없을 경우
-            if (products.isEmpty()) {
-                products = productRepository.findByCategory(category);
+            if (result.isEmpty()) {
+                result = productRepository.findByCategory(category, pageable);
             }
         } else {
             // 서버 카테고리일 경우 서브 카테고리만 조회
-            products = productRepository.findByCategory(category);
+            result = productRepository.findByCategory(category, pageable);
         }
 
-        // Stream 대신 for 루프 사용
-        List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
-        for (Product product : products) {
-            productResponseDTOList.add(product.toResponseDTO());
-        }
+        // PageResponseDTO 객체 생성
+        List<ProductResponseDTO> dtoList = result.getContent()
+                .stream()
+                .map(Product::toResponseDTO)
+                .collect(Collectors.toList());
 
-        return productResponseDTOList;
+        return PageResponseDTO.<ProductResponseDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
+                .total((int) result.getTotalElements())
+                .build();
     }
+
 
     // 장바구니 아이템의 가격 업데이트
     private void updateOrderItemDetails(Product product) {
