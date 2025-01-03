@@ -11,9 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByCategory(Category category);
+    Page<Product> findByCategory(Category category, Pageable pageable);
 
-    List<Product> findByCategoryIn(List<Category> categories);
+    Page<Product> findByCategoryIn(List<Category> categories, Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE " +
             "(:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
