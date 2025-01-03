@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,9 +111,9 @@ public class OrderService {
                 .user(user)
                 .totalPrice(orderReqDto.getTotalPrice())
                 .refundStatus(orderReqDto.isRefundStatus())
-                .orderStatus(Order.Status.PENDING)
+                .orderStatus(Order.Status.PAYMENTPROCESSED)
                 .orderDetails(orderDetails)
-                .regDate(LocalDateTime.now())
+                .regDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                 .build();
 
         // 배송 정보 설정
@@ -157,14 +158,17 @@ public class OrderService {
     public void deleteOrder(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
-        OrderItemDetail orderItemDetail = new OrderItemDetail();
-        int quantity = orderItemDetail.getQuantity();
-        Product product = productRepository.findById(orderItemDetail.getProduct().getProductId())
-                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        // 주문에 연결된 OrderDetail 목록을 조회
+        List<OrderDetail> orderDetails = order.getOrderDetails();
 
-        // 재고 증가
-        product.setProductCount(product.getProductCount() + quantity);
-        productRepository.save(product);
+        // 각 주문 상품에 대해 재고 처리
+        for (OrderDetail detail : orderDetails) {
+            Product product = detail.getProduct();
+            if (product != null) {
+                product.setProductCount(product.getProductCount() + detail.getOrderCount());
+                productRepository.save(product);
+            }
+        }
 
         orderRepository.delete(order);
     }
@@ -195,7 +199,7 @@ public class OrderService {
         dto.setOrderId(order.getOrderId());
         dto.setTotalPrice(order.getTotalPrice());
         dto.setRefundStatus(order.isRefundStatus());
-        dto.setRegDate(order.getRegDate());
+        dto.setRegDate(order.getRegDate().substring(0, 10).replace("-", "."));
         dto.setOrderStatus(order.getOrderStatus());
         dto.setEmail(order.getUser().getEmail());
 
