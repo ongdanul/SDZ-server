@@ -1,48 +1,75 @@
 package com.elice.sdz.aspect;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.aspectj.lang.JoinPoint;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.net.URLDecoder;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Aspect
+@Slf4j
 @Component
 public class LoggingAspect {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Pointcut("execution(* com.elice.sdz.*.controller.*Controller.*(..))")
+    @Pointcut("execution(* com.elice.sdz.*.controller.*Controller.*(..)) " )
+//            "&& !execution(* com.elice.sdz.*.controller.*Controller.*All*(..))")
     public void pointcut() {}
 
-    @Before("pointcut()")
-    public void request(JoinPoint joinPoint) throws JsonProcessingException {
+    @Around("pointcut()")
+    public Object logging(ProceedingJoinPoint joinPoint) throws Throwable {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+
+        String className = joinPoint.getSignature().getDeclaringType().getName();
         String methodName = joinPoint.getSignature().getName();
-        Object[] args = joinPoint.getArgs();
+        Map<String, Object> params = new HashMap<>();
 
-        String requestToJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(args);
+        try {
+            String decodedURI = URLDecoder.decode(request.getRequestURL().toString(), "UTF-8");
 
-        log.info("Request ({}): \n{}", methodName, requestToJson);
+            params.put("class", className);
+            params.put("method", methodName);;
+            params.put("params", getParams(request));
+            params.put("request_uri", decodedURI);
+            params.put("http_method", request.getMethod());
+        } catch (Exception e) {
+            log.error("LoggerAspect error", e);
+        }
+
+        log.info("[{}] {}", params.get("http_method"), params.get("request_uri"));
+        log.info("method: {}.{}", params.get("class"), params.get("method"));
+        log.info("params: {}", params.get("params"));
+
+        Object result = null;
+
+        try {
+            result = joinPoint.proceed();
+            log.info("Response: {}", result);
+        } catch (Exception e) {
+            log.error("ERROR: ", e);
+            throw e;
+        }
+
+        return result;
     }
 
-    @AfterReturning(value = "pointcut()", returning = "result")
-    public void response(JoinPoint joinPoint, Object result) throws JsonProcessingException {
-        String methodName = joinPoint.getSignature().getName();
+    private static JSONObject getParams(HttpServletRequest request) {
+        JSONObject jsonObject = new JSONObject();
+        Enumeration<String> params = request.getParameterNames();
 
-        String responseToJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        while (params.hasMoreElements()) {
+            String param = params.nextElement();
+            String replaceParam = param.replaceAll("\\.", "-");
+            jsonObject.put(replaceParam, request.getParameter(param));
+        }
 
-        log.info("Response ({}): \n{}", methodName, responseToJson);
-    }
-
-    @AfterThrowing(value = "pointcut()", throwing = "exception")
-    public void exception(JoinPoint joinPoint, Exception exception) throws JsonProcessingException {
-        String methodName = joinPoint.getSignature().getName();
-
-        String exceptionToJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(exception);
-
-        log.error("Exception ({}): \n{}", methodName, exceptionToJson);
+        return jsonObject;
     }
 }
