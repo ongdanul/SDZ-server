@@ -26,7 +26,7 @@
             </rollingPolicy>
             <encoder>
                 <pattern>
-                    %d{HH:mm:ss} [%thread] [%highlight(%level)] %logger{36} - %msg%n%ex{full}
+                    %d{HH:mm:ss} [%thread] [%level] %logger{36} - %msg%n%ex{full}
                 </pattern>
             </encoder>
         </appender>
