@@ -11,5 +11,6 @@ import java.util.List;
 public class AccountResponseDTO {
 
     private List<UserAccountDTO> emails;
+
     private String message;
 }

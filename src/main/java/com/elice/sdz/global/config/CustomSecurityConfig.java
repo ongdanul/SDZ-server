@@ -75,7 +75,7 @@ public class CustomSecurityConfig {
         //CORS
         http.cors(cors -> cors.configurationSource(request -> {
             var config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:5173", "http://34.64.176.77"));
+            config.setAllowedOrigins(List.of("http://localhost:5173", "http://34.64.176.77", "https://elice-sdz.duckdns.org"));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("Content-Type", "Authorization"));

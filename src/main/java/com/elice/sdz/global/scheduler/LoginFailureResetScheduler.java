@@ -1,4 +1,4 @@
-package com.elice.sdz.global.jwt;
+package com.elice.sdz.global.scheduler;
 
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
