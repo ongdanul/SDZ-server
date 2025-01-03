@@ -34,11 +34,9 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getAllProducts(@ParameterObject PageRequestDTO pageRequestDTO) {
         try {
-            log.info("Search keyword: {}", pageRequestDTO.getKeyword());  // 검색어 로그
             PageResponseDTO<ProductResponseDTO> products = productService.getAllProducts(pageRequestDTO);
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
-            log.error("Error fetching products: {}", e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -61,11 +59,9 @@ public class ProductController {
                                                             @RequestPart("thumbnail") MultipartFile thumbnail) {
 
         try {
-            // JSON 문자열을 ProductDTO 객체로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
             productDTO.setUserId(authenticationService.getCurrentUser());
-            // 서비스 호출
             ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images, thumbnail);
             return new ResponseEntity<>(productResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -110,8 +106,17 @@ public class ProductController {
     }
 
     @GetMapping("/category/{categoryId}")
-    public List<ProductResponseDTO> getProductsByCategory(@PathVariable Long categoryId) {
-        return productService.getProductsByCategory(categoryId);
+    public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @ParameterObject PageRequestDTO pageRequestDTO
+    ) {
+        try {
+            PageResponseDTO<ProductResponseDTO> products = productService.getProductsByCategory(categoryId, pageRequestDTO);
+
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }
