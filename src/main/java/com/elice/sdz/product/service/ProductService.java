@@ -13,11 +13,15 @@ import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ public class ProductService {
     private final OrderItemDetailRepository orderItemDetailRepository;
 
     // Product 생성
+    @Transactional
     public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images, MultipartFile thumbnail)
             throws IOException {
         // Category와 User를 ID로 받아와 조회
@@ -72,6 +77,7 @@ public class ProductService {
     }
 
     // Product 조회
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -79,12 +85,27 @@ public class ProductService {
     }
 
     // 모든 Product 조회
-    public List<ProductResponseDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll();
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ProductResponseDTO> getAllProducts(PageRequestDTO pageRequestDTO) {
+        // Pageable 객체 생성, 정렬 필드 지정
+        Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
+        String keyword = pageRequestDTO.getKeyword();
 
-        return products.stream()
+        // 검색어가 포함된 상품만 조회
+        Page<Product> result = productRepository.findAllByKeyword(keyword, pageable);
+
+        // PageResponseDTO 객체 생성
+        List<ProductResponseDTO> dtoList = result.getContent()
+                .stream()
                 .map(Product::toResponseDTO)
                 .collect(Collectors.toList());
+
+        return PageResponseDTO.<ProductResponseDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
+                .total((int) result.getTotalElements())
+                .keyword(keyword) // 검색어 정보도 포함
+                .build();
     }
 
     // Product 수정
@@ -164,11 +185,28 @@ public class ProductService {
 
 
     // 특정 카테고리의 Product 조회
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        List<Product> products = productRepository.findByCategory(category);
+        List<Product> products;
+
+        // 루트 카테고리인 경우 서브 카테고리 상품까지 조회
+        if (category.getParentId() == null) {
+            List<Category> subCategories = categoryRepository.findByParentId(categoryId);
+            subCategories.add(category);
+
+            products = productRepository.findByCategoryIn(subCategories);
+
+            // 루트 카테고리와 서브 카테고리에 상품이 없을 경우
+            if (products.isEmpty()) {
+                products = productRepository.findByCategory(category);
+            }
+        } else {
+            // 서버 카테고리일 경우 서브 카테고리만 조회
+            products = productRepository.findByCategory(category);
+        }
 
         // Stream 대신 for 루프 사용
         List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();

@@ -47,6 +47,7 @@ public class Order extends BaseEntity {
     private Delivery delivery; // Delivery 엔티티를 참조
 
     //일대다
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 

@@ -3,11 +3,15 @@ package com.elice.sdz.product.controller;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.service.ProductService;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.service.AuthenticationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/products")
 public class ProductController {
 
@@ -27,10 +32,17 @@ public class ProductController {
 
     // 상품 목록 조회
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
-        List<ProductResponseDTO> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getAllProducts(@ParameterObject PageRequestDTO pageRequestDTO) {
+        try {
+            log.info("Search keyword: {}", pageRequestDTO.getKeyword());  // 검색어 로그
+            PageResponseDTO<ProductResponseDTO> products = productService.getAllProducts(pageRequestDTO);
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching products: {}", e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     // 상품 조회
     @GetMapping("/{productId}")
