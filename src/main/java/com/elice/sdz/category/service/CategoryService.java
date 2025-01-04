@@ -87,6 +87,10 @@ public class CategoryService {
             throw new CustomException(ErrorCode.CATEGORY_WITH_PRODUCTS);
         }
 
+        if (!category.getSubCategories().isEmpty()) {
+            throw new CustomException(ErrorCode.CATEGORY_WITH_PRODUCTS);
+        }
+
         categoryRepository.deleteById(categoryId);
     }
 }

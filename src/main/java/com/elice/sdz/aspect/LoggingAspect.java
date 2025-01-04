@@ -51,7 +51,9 @@ public class LoggingAspect {
 
         try {
             result = joinPoint.proceed();
-            log.info("Response: {}", result);
+            if (result != null) {
+                log.info("Response: {}", result);
+            }
         } catch (Exception e) {
             log.error("ERROR: ", e);
             throw e;
