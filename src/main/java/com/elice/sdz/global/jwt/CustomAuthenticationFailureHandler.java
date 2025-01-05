@@ -45,6 +45,13 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         }
         Users user = optionalUser.get();
 
+        // 탈퇴된 계정인 경우
+        if (user.isDeactivated()) {
+            log.error("탈퇴 처리된 아이디입니다: {}", email);
+            sendResponse(response, ErrorCode.LOGIN_DEACTIVATED.getHttpStatus(), ErrorCode.LOGIN_DEACTIVATED.getMessage());
+            return;
+        }
+
         // 계정이 이미 잠금 상태인 경우
         if (user.isLoginLock()) {
             log.error("로그인 잠금된 아이디입니다.: {} ", email);

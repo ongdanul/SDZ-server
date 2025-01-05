@@ -3,6 +3,7 @@ package com.elice.sdz.user.entity;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.global.entity.BaseEntity;
 import com.elice.sdz.order.entity.Order;
+import com.elice.sdz.orderItem.entity.OrderItem;
 import com.elice.sdz.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -59,6 +60,14 @@ public class Users extends BaseEntity {
     @Column(name = "profile_url")
     private String profileUrl;
 
+    @Column(name = "deactivated", nullable = false,
+            columnDefinition = "BIT(1) DEFAULT 0")
+    private boolean deactivated;
+
+    @Column(name = "deactivationTime",
+            columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Instant deactivationTime;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
     private final List<Product> products = new ArrayList<>();
@@ -69,7 +78,11 @@ public class Users extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private final List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
+        private final List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private final List<OrderItem> orderItems= new ArrayList<>();
 
     public enum Auth {
         ROLE_USER,
