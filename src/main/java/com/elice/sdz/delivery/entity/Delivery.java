@@ -18,7 +18,7 @@ import lombok.*;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deliveryId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "delivery_address_id", nullable = false)
     private DeliveryAddress deliveryAddress;
 
