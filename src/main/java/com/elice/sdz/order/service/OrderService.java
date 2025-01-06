@@ -18,16 +18,10 @@ import com.elice.sdz.orderItem.entity.OrderItemDetail;
 import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
-import com.elice.sdz.user.dto.request.PageRequestDTO;
-import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,30 +42,12 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final UserRepository userRepository;
-    private final OrderItemRepository orderItemRepository;
 
 
-
-    // 사용자 주문 목록 조회 (페이지네이션 추가)
+    //사용자 주문 목록 조회
     @Transactional(readOnly = true)
-    public PageResponseDTO<OrderResDto> getOrdersByUserId(String userId, PageRequestDTO pageRequestDTO) {
-        Pageable pageable = pageRequestDTO.getPageable("regDate"); // 기본 정렬 기준 설정
-
-        // 사용자 이메일로 주문을 조회하고 페이지네이션 적용
-        Page<Order> ordersPage = orderRepository.findByUserEmail(userId, pageable);
-
-        // 주문 엔티티를 DTO로 변환
-        List<OrderResDto> orderResDto = ordersPage.stream()
-                .map(this::toResDto)
-                .collect(Collectors.toList());
-
-        // PageResponseDTO 생성
-        return PageResponseDTO.<OrderResDto>withAll()
-                .pageRequestDTO(pageRequestDTO)
-                .dtoList(orderResDto)
-                .total((int) ordersPage.getTotalElements())
-                .keyword(pageRequestDTO.getKeyword())
-                .build();
+    public List<OrderResDto> getOrdersByUserId(String userId) {
+        return orderRepository.findByUserEmail(userId).stream().map(this::toResDto).collect(Collectors.toList());
     }
     //특정(주문Id) 주문 상세 조회
     @Transactional(readOnly = true)
@@ -196,21 +172,13 @@ public class OrderService {
         orderRepository.delete(order);
     }
 
-    // 관리자가 모든 주문 조회
+    //관리자 모든 주문 조회
     @Transactional(readOnly = true)
-    public PageResponseDTO<OrderResDto> findAllOrders(PageRequestDTO pageRequestDTO) {
-        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize());
-        Page<Order> ordersPage = orderRepository.findAll(pageable);
-
-        List<OrderResDto> dtoList = ordersPage.stream()
+    public List<OrderResDto> findAllOrders() {
+        return orderRepository.findAll().stream()
                 .map(this::toResDto)
                 .collect(Collectors.toList());
 
-        return PageResponseDTO.<OrderResDto>withAll()
-                .pageRequestDTO(pageRequestDTO)
-                .dtoList(dtoList)
-                .total((int) ordersPage.getTotalElements())
-                .build();
     }
 
     //관리자 주문 상태수정
@@ -223,42 +191,23 @@ public class OrderService {
     }
     //관리자 주문 삭제
     @Transactional
-    public void deleteOrdersByAdmin(List<Long> orderIds) {
-        if (orderIds.isEmpty()) {
-            throw new CustomException(ErrorCode.ORDER_NOT_FOUND); // 삭제할 주문 ID가 없을 경우
-        }
+    public void deleteOrderByAdmin(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+        // 주문에 연결된 OrderDetail 목록을 조회
+        List<OrderDetail> orderDetails = order.getOrderDetails();
 
-        // 주문 ID에 해당하는 주문들을 조회
-        List<Order> orders = orderRepository.findAllById(orderIds);
-        if (orders.size() != orderIds.size()) {
-            throw new CustomException(ErrorCode.ORDER_NOT_FOUND); // 주문이 존재하지 않는 경우
-        }
-
-        // 각 주문에 대해 처리
-        for (Order order : orders) {
-            try {
-                // 주문에 연결된 OrderDetail 목록을 조회
-                List<OrderDetail> orderDetails = order.getOrderDetails();
-
-                // 주문에 연결된 각 상품에 대해 재고 처리
-                for (OrderDetail detail : orderDetails) {
-                    Product product = detail.getProduct();
-                    if (product != null) {
-                        product.setProductCount(product.getProductCount() + detail.getOrderCount());
-                        productRepository.save(product);
-                    }
-                }
-
-                // 주문 삭제
-                orderRepository.delete(order);
-            } catch (Exception e) {
-                log.error("주문 {} 삭제 중 오류 발생", order.getOrderId(), e);
-                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR); // 예외 발생 시 처리
+        // 각 주문 상품에 대해 재고 처리
+        for (OrderDetail detail : orderDetails) {
+            Product product = detail.getProduct();
+            if (product != null) {
+                product.setProductCount(product.getProductCount() + detail.getOrderCount());
+                productRepository.save(product);
             }
         }
+
+        orderRepository.delete(order);
     }
-
-
     //Entity->toDto 변환
     private OrderResDto toResDto(Order order) {
         OrderResDto dto = new OrderResDto();
