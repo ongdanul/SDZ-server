@@ -83,7 +83,8 @@ public class OrderService {
                 product.setProductCount(product.getProductCount() - quantity);
                 productRepository.save(product);  // 변경된 상품 정보 저장
 
-                removeCompleteOrderItems(orderItem, orderItemDetail, user, product, quantity);
+                // 주문완료된 장바구니 정보 삭제
+                removeCompleteOrderItems(user, product, quantity);
 
                 OrderDetail orderDetail = OrderDetail.builder()
                         .orderCount(quantity)
@@ -155,8 +156,7 @@ public class OrderService {
         return toResDto(savedOrder);
     }
 
-    private void removeCompleteOrderItems(OrderItemDTO orderItem, OrderItemDetailDTO orderItemDetail, Users user, Product product,
-                           int quantity) {
+    private void removeCompleteOrderItems(Users user, Product product, int quantity) {
         OrderItem deleteOrderItem = orderItemRepository.findByUser(user)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
@@ -167,14 +167,14 @@ public class OrderService {
             OrderItemDetail deleteOrderItemDetail = optionalOrderItemDetail.get();
 
             // 수량 감소 처리
-            int updatedQuantity = orderItemDetail.getQuantity() - quantity;
+            int updatedQuantity = deleteOrderItemDetail.getQuantity() - quantity;
             if (updatedQuantity <= 0) {
                 // 수량이 0 이하일 경우 해당 항목 삭제
                 orderItemDetailRepository.delete(deleteOrderItemDetail);
-                orderItem.getOrderItemDetails().remove(orderItemDetail);
+                deleteOrderItem.getOrderItemDetails().remove(deleteOrderItemDetail);
             } else {
                 // 수량이 남아 있을 경우 업데이트
-                orderItemDetail.setQuantity(updatedQuantity);
+                deleteOrderItemDetail.setQuantity(updatedQuantity);
                 orderItemDetailRepository.save(deleteOrderItemDetail);
             }
 
