@@ -63,7 +63,7 @@ public class ImageService {
     @Transactional
     public String saveImage(MultipartFile image) throws IOException {
         // 파일 이름 생성
-        String fileName = UUID.randomUUID().toString().replace("-", "");
+        String fileName = image.getOriginalFilename() + UUID.randomUUID().toString().replace("-", "");
         // 실제 파일이 저장될 경로
         String filePath = uploadsDir + fileName;
         // DB에 저장할 경로 문자열
