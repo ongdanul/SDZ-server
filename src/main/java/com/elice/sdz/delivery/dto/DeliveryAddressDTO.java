@@ -54,6 +54,7 @@ public class DeliveryAddressDTO {
 
     public static DeliveryAddressDTO toDTO(DeliveryAddress deliveryAddress, Users users) {
         return DeliveryAddressDTO.builder()
+                .deliveryAddressId(deliveryAddress.getDeliveryAddressId())
                 .email(users.getEmail())
                 .deliveryAddress1(deliveryAddress.getDeliveryAddress1())
                 .deliveryAddress2(deliveryAddress.getDeliveryAddress2())

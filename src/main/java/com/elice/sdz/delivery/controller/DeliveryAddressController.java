@@ -37,6 +37,13 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
         return ResponseEntity.ok(deliveryAddressDTO);
     }
 
+    @GetMapping("/default")
+    public ResponseEntity<DeliveryAddressDTO> deliveryAddressDetail() {
+        String email = authenticationService.getCurrentUser();
+        DeliveryAddressDTO deliveryAddressDTO = deliveryAddressService.findDeliveryAddressDefaultInfo(email);
+        return ResponseEntity.ok(deliveryAddressDTO);
+    }
+
     @PostMapping
     public ResponseEntity<Void> createNewAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
         deliveryAddressDTO.setEmail(authenticationService.getCurrentUser());

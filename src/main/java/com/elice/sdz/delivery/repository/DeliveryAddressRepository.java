@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress, Long> {
     Page<DeliveryAddress> findAllByUser(Users user, Pageable pageable);
 
-    Optional<DeliveryAddress> findByDeliveryAddressId(Long deliveryAddressId);
+    Optional<DeliveryAddress> findByUserAndDefaultCheckTrue(Users user);
 
     List<DeliveryAddress> findAllByUser(Users user);
 
