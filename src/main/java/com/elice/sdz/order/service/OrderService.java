@@ -13,10 +13,16 @@ import com.elice.sdz.order.entity.OrderDetail;
 import com.elice.sdz.order.repository.OrderDetailRepository;
 import com.elice.sdz.order.repository.OrderRepository;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
+import com.elice.sdz.orderItem.dto.OrderItemDTO.OrderItemDetailDTO;
+import com.elice.sdz.orderItem.entity.OrderItem;
+import com.elice.sdz.orderItem.entity.OrderItemDetail;
+import com.elice.sdz.orderItem.repository.OrderItemDetailRepository;
+import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +44,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final UserRepository userRepository;
-
+    private final OrderItemDetailRepository orderItemDetailRepository;
+    private final OrderItemRepository orderItemRepository;
 
     //사용자 주문 목록 조회
     @Transactional(readOnly = true)
@@ -75,6 +82,8 @@ public class OrderService {
                 // 재고 감소
                 product.setProductCount(product.getProductCount() - quantity);
                 productRepository.save(product);  // 변경된 상품 정보 저장
+
+                removeCompleteOrderItems(orderItem, orderItemDetail, user, product, quantity);
 
                 OrderDetail orderDetail = OrderDetail.builder()
                         .orderCount(quantity)
@@ -138,7 +147,40 @@ public class OrderService {
         }
         // 주문 저장
         Order savedOrder = orderRepository.save(order);
+
+        // user, product
+        // userid로 orderItem 조회 ->orderItem.getId()
+        // orderItem.getId(), product
+
         return toResDto(savedOrder);
+    }
+
+    private void removeCompleteOrderItems(OrderItemDTO orderItem, OrderItemDetailDTO orderItemDetail, Users user, Product product,
+                           int quantity) {
+        OrderItem deleteOrderItem = orderItemRepository.findByUser(user)
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
+
+        Optional<OrderItemDetail> optionalOrderItemDetail = orderItemDetailRepository
+                .findByOrderItemIdAndProduct(deleteOrderItem.getId(), product);
+
+        if (optionalOrderItemDetail.isPresent()) {
+            OrderItemDetail deleteOrderItemDetail = optionalOrderItemDetail.get();
+
+            // 수량 감소 처리
+            int updatedQuantity = orderItemDetail.getQuantity() - quantity;
+            if (updatedQuantity <= 0) {
+                // 수량이 0 이하일 경우 해당 항목 삭제
+                orderItemDetailRepository.delete(deleteOrderItemDetail);
+                orderItem.getOrderItemDetails().remove(orderItemDetail);
+            } else {
+                // 수량이 남아 있을 경우 업데이트
+                orderItemDetail.setQuantity(updatedQuantity);
+                orderItemDetailRepository.save(deleteOrderItemDetail);
+            }
+
+            deleteOrderItem.updateTimestamp();
+            orderItemRepository.save(deleteOrderItem);
+        }
     }
 
     //사용자 주문 수정
