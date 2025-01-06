@@ -212,6 +212,9 @@ public class OrderService {
         // 주문에 연결된 OrderDetail 목록을 조회
         List<OrderDetail> orderDetails = order.getOrderDetails();
 
+        if(order.getOrderStatus() != Order.Status.PENDING) {
+            throw new CustomException(ErrorCode.ORDER_CANNOT_BE_MODIFIED);
+        }
         // 각 주문 상품에 대해 재고 처리
         for (OrderDetail detail : orderDetails) {
             Product product = detail.getProduct();
