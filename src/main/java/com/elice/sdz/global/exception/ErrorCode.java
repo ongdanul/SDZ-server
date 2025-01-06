@@ -14,16 +14,18 @@ public enum ErrorCode {
 
     // 주문 관련 에러
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "주문이 존재하지 않습니다."),
-    INVALID_ORDER(HttpStatus.BAD_REQUEST, "INVALID_ORDER", "주문이 잘못되었습니다."),
+    INVALID_ORDER_COUNT(HttpStatus.BAD_REQUEST, "INVALID_ORDER_COUNT", "주문 수량은 1 이상이어야 합니다."),
     ORDER_CANNOT_BE_MODIFIED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_MODIFIED", "주문을 수정할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
     ORDER_CANNOT_BE_CANCELLED(HttpStatus.BAD_REQUEST, "ORDER_CANNOT_BE_CANCELLED", "주문을 취소할 수 없습니다. 배송 처리가 시작되었거나 이미 완료된 주문입니다."),
-    ORDER_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_DETAIL_NOT_FOUND","주문 상품 정보를 찾을 수 없습니다"),
+    ORDER_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_DETAIL_NOT_FOUND","주문 상품 정보를 찾을 수 없습니다."),
+
     // 로그인 관련 에러
-    ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 거부: 해당 리소스에 접근할 권한이 없습니다."),
-    MISSING_AUTHORIZATION(HttpStatus.FORBIDDEN, "MISSING_AUTHORIZATION", "권한 정보가 없습니다."),
+    ACCESS_DENIED(HttpStatus.UNAUTHORIZED, "ACCESS_DENIED", "접근 거부: 해당 리소스에 접근할 권한이 없습니다."),
+    MISSING_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "MISSING_AUTHORIZATION", "권한 정보가 없습니다."),
     LOGIN_LOCKED(HttpStatus.FORBIDDEN, "LOGIN_LOCKED", "로그인 잠금된 계정입니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "로그인에 실패하였습니다."),
     INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_LOGIN_REQUEST", "유효하지 않은 엑세스 로그인 요청입니다."),
+    LOGIN_DEACTIVATED(HttpStatus.FORBIDDEN, "LOGIN_DEACTIVATED", "탈퇴된 계정입니다."),
 
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_ACCESS_TOKEN", "만료된 엑세스 토큰입니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_REFRESH_TOKEN", "만료된 리프레시 토큰입니다."),
@@ -60,6 +62,9 @@ public enum ErrorCode {
     // 배송지 관련 에러
     DELIVERY_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY_ADDRESS_NOT_FOUND", "배송지 정보가 존재하지 않습니다."),
     MAX_DELIVERY_ADDRESSES(HttpStatus.CONFLICT, "MAX_DELIVERY_ADDRESSES", "배송지 주소는 최대 10개까지만 등록할 수 있습니다."),
+
+    // 배송 관련 에러
+    DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY_NOT_FOUND", "배송 정보가 존재하지 않습니다."),
 
     // 결제 관련 에러
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_FAILED", "결제 처리에 실패했습니다."),

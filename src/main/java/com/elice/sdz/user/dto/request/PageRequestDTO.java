@@ -1,4 +1,4 @@
-package com.elice.sdz.user.dto;
+package com.elice.sdz.user.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

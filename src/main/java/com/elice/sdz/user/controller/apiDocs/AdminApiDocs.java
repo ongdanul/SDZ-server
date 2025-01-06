@@ -1,7 +1,7 @@
 package com.elice.sdz.user.controller.apiDocs;
 
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.dto.UserListDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springdoc.core.annotations.ParameterObject;

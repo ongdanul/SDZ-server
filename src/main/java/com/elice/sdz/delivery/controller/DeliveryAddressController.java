@@ -4,9 +4,8 @@ import com.elice.sdz.delivery.controller.apiDocs.DeliveryAddressApiDocs;
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
 import com.elice.sdz.delivery.service.DeliveryAddressService;
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
-import com.elice.sdz.user.dto.UserDetailDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +34,13 @@ public class DeliveryAddressController implements DeliveryAddressApiDocs {
     public ResponseEntity<DeliveryAddressDTO> deliveryAddressDetail(@PathVariable("deliveryAddressId") Long deliveryAddressId) {
         String email = authenticationService.getCurrentUser();
         DeliveryAddressDTO deliveryAddressDTO = deliveryAddressService.findDeliveryAddressInfo(deliveryAddressId, email);
+        return ResponseEntity.ok(deliveryAddressDTO);
+    }
+
+    @GetMapping("/default")
+    public ResponseEntity<DeliveryAddressDTO> deliveryAddressDetail() {
+        String email = authenticationService.getCurrentUser();
+        DeliveryAddressDTO deliveryAddressDTO = deliveryAddressService.findDeliveryAddressDefaultInfo(email);
         return ResponseEntity.ok(deliveryAddressDTO);
     }
 

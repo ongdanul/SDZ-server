@@ -11,7 +11,6 @@ import com.elice.sdz.user.service.AuthenticationService;
 @RestController
 @RequestMapping("/api/order-item")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
@@ -44,6 +43,14 @@ public class OrderItemController {
     public ResponseEntity<Void> clearOrderItems() {
         String userId = authenticationService.getCurrentUser();
         orderItemService.clearOrderItems(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 게스트 장바구니 병합
+    @PostMapping("/merge")
+    public ResponseEntity<Void> mergeOrderItems(@RequestBody OrderItemDTO guestOrderItems) {
+        String userId = authenticationService.getCurrentUser();
+        orderItemService.mergeOrderItems(userId, guestOrderItems);
         return ResponseEntity.ok().build();
     }
 }

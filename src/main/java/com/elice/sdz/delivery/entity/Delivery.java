@@ -5,23 +5,20 @@ import com.elice.sdz.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
-
 @Getter
 @Setter
-//@ToString
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "delivery")
-public class Delivery extends BaseEntity {
+    public class Delivery extends BaseEntity {
 
     @Id
     @Column(name = "delivery_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deliveryId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "delivery_address_id", nullable = false)
     private DeliveryAddress deliveryAddress;
 

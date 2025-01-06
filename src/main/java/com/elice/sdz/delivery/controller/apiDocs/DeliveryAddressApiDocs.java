@@ -2,8 +2,8 @@ package com.elice.sdz.delivery.controller.apiDocs;
 
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;

@@ -13,11 +13,15 @@ import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -40,13 +43,14 @@ public class ProductService {
     private final OrderItemDetailRepository orderItemDetailRepository;
 
     // Product 생성
+    @Transactional
     public ProductResponseDTO createProduct(ProductDTO productDTO, List<MultipartFile> images, MultipartFile thumbnail)
             throws IOException {
         // Category와 User를 ID로 받아와 조회
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        Users user = userRepository.findById("admin@example.com")
+        Users user = userRepository.findById(productDTO.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Product 객체 생성
@@ -73,6 +77,7 @@ public class ProductService {
     }
 
     // Product 조회
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -80,12 +85,27 @@ public class ProductService {
     }
 
     // 모든 Product 조회
-    public List<ProductResponseDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll();
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ProductResponseDTO> getAllProducts(PageRequestDTO pageRequestDTO) {
+        // Pageable 객체 생성, 정렬 필드 지정
+        Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
+        String keyword = pageRequestDTO.getKeyword();
 
-        return products.stream()
+        // 검색어가 포함된 상품만 조회
+        Page<Product> result = productRepository.findAllByKeyword(keyword, pageable);
+
+        // PageResponseDTO 객체 생성
+        List<ProductResponseDTO> dtoList = result.getContent()
+                .stream()
                 .map(Product::toResponseDTO)
                 .collect(Collectors.toList());
+
+        return PageResponseDTO.<ProductResponseDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
+                .total((int) result.getTotalElements())
+                .keyword(keyword) // 검색어 정보도 포함
+                .build();
     }
 
     // Product 수정
@@ -111,6 +131,7 @@ public class ProductService {
         product.setProductContent(productDTO.getProductContent());
         product.setCategory(category);
 
+
         // 3. 삭제할 이미지 처리
         if (deletedImagePaths != null) {
             List<Image> imagesToDelete = product.getImages().stream()
@@ -130,7 +151,7 @@ public class ProductService {
         // 5. 새로운 이미지 추가
         if (newImages != null && !newImages.isEmpty()) {
             for (MultipartFile newImage : newImages) {
-                String imagePath = imageService.saveImage(newImage, UPLOAD_DIR);
+                String imagePath = imageService.saveImage(newImage);
                 Image imageEntity = new Image(product, imagePath);
                 product.getImages().add(imageEntity);
             }
@@ -164,20 +185,43 @@ public class ProductService {
 
 
     // 특정 카테고리의 Product 조회
-    public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ProductResponseDTO> getProductsByCategory(Long categoryId, PageRequestDTO pageRequestDTO) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        List<Product> products = productRepository.findByCategory(category);
+        Pageable pageable = pageRequestDTO.getPageable("productId", "createdAt");
+        Page<Product> result;
 
-        // Stream 대신 for 루프 사용
-        List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
-        for (Product product : products) {
-            productResponseDTOList.add(product.toResponseDTO());
+        if (category.getParentId() == null) {
+            // 루트 카테고리인 경우 서브 카테고리 상품까지 조회
+            List<Category> subCategories = categoryRepository.findByParentId(categoryId);
+            subCategories.add(category);
+
+            result = productRepository.findByCategoryIn(subCategories, pageable);
+
+            // 루트 카테고리와 서브 카테고리에 상품이 없을 경우
+            if (result.isEmpty()) {
+                result = productRepository.findByCategory(category, pageable);
+            }
+        } else {
+            // 서버 카테고리일 경우 서브 카테고리만 조회
+            result = productRepository.findByCategory(category, pageable);
         }
 
-        return productResponseDTOList;
+        // PageResponseDTO 객체 생성
+        List<ProductResponseDTO> dtoList = result.getContent()
+                .stream()
+                .map(Product::toResponseDTO)
+                .collect(Collectors.toList());
+
+        return PageResponseDTO.<ProductResponseDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
+                .total((int) result.getTotalElements())
+                .build();
     }
+
 
     // 장바구니 아이템의 가격 업데이트
     private void updateOrderItemDetails(Product product) {

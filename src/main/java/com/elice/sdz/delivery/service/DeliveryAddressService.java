@@ -2,12 +2,14 @@ package com.elice.sdz.delivery.service;
 
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
+import com.elice.sdz.delivery.entity.Delivery;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.delivery.repository.DeliveryAddressRepository;
+import com.elice.sdz.delivery.repository.DeliveryRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
-import com.elice.sdz.user.dto.PageRequestDTO;
-import com.elice.sdz.user.dto.PageResponseDTO;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
 import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +59,17 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
+
+        return DeliveryAddressDTO.toDTO(deliveryAddress, user);
+    }
+
+    public DeliveryAddressDTO findDeliveryAddressDefaultInfo(String email) {
+        Users user = userRepository.findById(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUserAndDefaultCheckTrue(user)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         return DeliveryAddressDTO.toDTO(deliveryAddress, user);
@@ -78,8 +90,8 @@ public class DeliveryAddressService {
 
         DeliveryAddress deliveryAddress = deliveryAddressDTO.toEntity(user);
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("새 배송 주소가 성공적으로 생성되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 생성 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -91,7 +103,7 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(deliveryAddressDTO.getEmail())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
@@ -104,8 +116,8 @@ public class DeliveryAddressService {
 
         deliveryAddressDTO.updateEntity(deliveryAddress, user);
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("배송 주소가 성공적으로 수정되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -117,7 +129,7 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
@@ -129,8 +141,8 @@ public class DeliveryAddressService {
         deliveryAddress.setDefaultCheck(true);
 
         try {
-            deliveryAddressRepository.save(deliveryAddress);
             log.info("배송 주소가 성공적으로 수정되었습니다.");
+            deliveryAddressRepository.save(deliveryAddress);
         } catch (Exception e) {
             log.error("배송 주소 수정 중 오류가 발생했습니다: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -149,14 +161,13 @@ public class DeliveryAddressService {
 
     @Transactional
     public void deleteAddress(Long deliveryAddressId, String email) {
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
-        log.info("email {}, DB Email {}",email, deliveryAddress.getUser().getEmail());
         if(!deliveryAddress.getUser().getEmail().equals(email)) {
             throw new AccessDeniedException("삭제할 권한이 없습니다.");
         }
-        deliveryAddressRepository.delete(deliveryAddress);
         log.info("배송 주소가 성공적으로 삭제되었습니다.");
+        deliveryAddressRepository.delete(deliveryAddress);
     }
 }

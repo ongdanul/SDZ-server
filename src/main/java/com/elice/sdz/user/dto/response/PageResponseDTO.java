@@ -1,5 +1,6 @@
-package com.elice.sdz.user.dto;
+package com.elice.sdz.user.dto.response;
 
+import com.elice.sdz.user.dto.request.PageRequestDTO;
 import lombok.Builder;
 import lombok.Getter;
 

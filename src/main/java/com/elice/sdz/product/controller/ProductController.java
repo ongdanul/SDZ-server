@@ -3,10 +3,15 @@ package com.elice.sdz.product.controller;
 import com.elice.sdz.product.dto.ProductDTO;
 import com.elice.sdz.product.dto.ProductResponseDTO;
 import com.elice.sdz.product.service.ProductService;
+import com.elice.sdz.user.dto.request.PageRequestDTO;
+import com.elice.sdz.user.dto.response.PageResponseDTO;
+import com.elice.sdz.user.service.AuthenticationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +23,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
     private final ProductService productService;
+    private final AuthenticationService authenticationService;
 
     // 상품 목록 조회
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
-        List<ProductResponseDTO> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getAllProducts(@ParameterObject PageRequestDTO pageRequestDTO) {
+        try {
+            PageResponseDTO<ProductResponseDTO> products = productService.getAllProducts(pageRequestDTO);
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     // 상품 조회
     @GetMapping("/{productId}")
@@ -48,11 +59,9 @@ public class ProductController {
                                                             @RequestPart("thumbnail") MultipartFile thumbnail) {
 
         try {
-            // JSON 문자열을 ProductDTO 객체로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
-
-            // 서비스 호출
+            productDTO.setUserId(authenticationService.getCurrentUser());
             ProductResponseDTO productResponseDTO = productService.createProduct(productDTO, images, thumbnail);
             return new ResponseEntity<>(productResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -71,7 +80,7 @@ public class ProductController {
             // JSON 문자열을 ProductDTO 객체로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             ProductDTO productDTO = objectMapper.readValue(productDTOJson, ProductDTO.class);
-
+            productDTO.setUserId(authenticationService.getCurrentUser());
             // deletedImagePaths JSON 파싱
             List<String> deletedImagePaths = objectMapper.readValue(
                     deletedImagePathsJson, new TypeReference<List<String>>() {});
@@ -97,8 +106,17 @@ public class ProductController {
     }
 
     @GetMapping("/category/{categoryId}")
-    public List<ProductResponseDTO> getProductsByCategory(@PathVariable Long categoryId) {
-        return productService.getProductsByCategory(categoryId);
+    public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @ParameterObject PageRequestDTO pageRequestDTO
+    ) {
+        try {
+            PageResponseDTO<ProductResponseDTO> products = productService.getProductsByCategory(categoryId, pageRequestDTO);
+
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

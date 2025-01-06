@@ -1,77 +1,66 @@
-# SDZ
+<div align="center">
+<img src="./readme/logo.png" alt="사다줘로고" width="250px">
+</div>
 
-## 1. Project Overview
-***
-- 프로젝트 이름 : SDZ(사다줘)
-- 프로젝트 설명 : 
-  - 의자 전문 온라인 쇼핑몰
-  - 관리자가 판매자인 B2C 모델
+# 목차
+[프로젝트 소개](#OverView) <br>
+[기술 스택](#Stacks) <br>
+[시비스 기능](#service) <br>
 
+# OverView
+### 프로젝트 개요
+> 프로젝트명 : SDZ (사다줘) <br>
+개발 기간 : 2024.12.09 ~2025.01.06 <br>
+개발 멤버 : 김영철 김주희 이강산 정은주 정준민
 
-## 2. Features
-***
-### Core
-- 상품
-    - 서버
-        - 상품 CRUD
-    - 클라이언트
-        - 상품상세/상품등록/수정
-        - 상품목록(카테고리별)/상품목록(통합검색)
-        - 어드민 페이지(상품 관리-목록)
-- 주문
-    - 서버
-        - 주문 CRUD
-    - 클라이언트
-        - 주문 진행/주문 완료
-        - 마이페이지(주문목록)
-        - 어드민 페이지(주문 관리-목록)
-- 회원
-    - 서버
-        - 회원 CRUD
-    - 클라이언트
-        - 로그인/회원가입
-        - 마이 페이지(회원정보변경/배송지주소관리/탈퇴)
-        - 어드민 페이지(회원관리-목록)
-- 카테고리
-    - 서버
-        - 카테고리 CRUD
-    - 클라이언트
-        - 카테고리/메인화면
-        - 어드민 페이지(카테고리관리-목록)
-- 장바구니
-    - 서버
-        - 장바구니 CRUD
-        - 첨부 파일
-    - 클라이언트
-        - 장바구니
+### 프로젝트 설명
+>의자를 전문적으로 판매하는 온라인 쇼핑몰 <br>
+관리자가 판매자인 B2C 모델
 
-### Advanced
-- 리뷰
-    - 서버
-        - 리뷰 CRUD
-    - 클라이언트
-        - 리뷰 등록/수정 페이지
-- 문의
-    - 서버
-        - 문의 CRUD
-    - 클라이언트
-        - 문의 등록/수정 페이지
-- 환불
-    - 서버
-        - 환불 CRUD
-    - 클라이언트
-        - 환불 등록/수정 페이지
-- 소셜 로그인
-    - 기존에 구현한 구글을 제외한 다른 플랫폼 활용
+### 배포 주소
+>https://elice-sdz.duckdns.org/ <br>
 
+>테스트 계정 <br>
+ID : test <br>
+PW : passw0rd
 
-## 3.Wireframe
-***
-![img.png](readme/wireframe.png)
-- [figma](https://www.figma.com/design/gCf9nOPYvVuR7fzW98gave/2%EC%B0%A8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%99%80%EC%9D%B4%EC%96%B4-%ED%94%84%EB%A0%88%EC%9E%84?node-id=0-1&node-type=canvas&t=Jk42OHNCQ3LC68HO-0)
+# Stacks
+#### Platforms & Languages
+<img src="https://img.shields.io/badge/Spring-6DB33F?style=flat&logo=Spring&logoColor=white" />
+<img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat&logo=springsecurity&logoColor=white" />
+<img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white" />
+<img src="https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white" />
+<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white" /> <br>
 
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=white" />
+<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white" />
+<img src="https://img.shields.io/badge/ChakraUI-319795?style=flat&logo=chakraui&logoColor=white" />
+<img src="https://img.shields.io/badge/Zustand-000000?style=flat&logo=Zustand&logoColor=white" /> <br>
 
-## 4.ERD
-***
-![img_1.png](readme/erd.png)
-- [ERDCloud](https://www.erdcloud.com/d/tnhudChpccXNrdgkF)
+#### Tools
+<img src="https://img.shields.io/badge/intellij IDE-000000?style=flat&logo=intellijidea&logoColor=white" />
+<img src="https://img.shields.io/badge/Nginx-009639?style=flat&logo=nginx&logoColor=white" />
+<img src="https://img.shields.io/badge/GitLab-FC6D26?style=flat&logo=gitlab&logoColor=white" />
+<img src="https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white" />
+
+# Service
+#### 회원
+>  - 회원 CRUD
+>  - 소셜 API (google, kakao, naver)
+>  - 다음 주소 API
+#### 상품
+>  - 상품 CRUD
+>  - 키워드 Search
+#### 주문
+>  - 주문 CRUD
+>  - 로그인 회원만 주문도메인 접근 가능
+#### 장바구니
+>  - 장바구니 CRUD
+>  - 비회원 로컬스토리지에 장바구니 저장
+>  - 로그인 시 기존 장바구니에 머지 후 DB 저장
+#### 카테고리
+>  - 카테고리 CRUD
+>  - 관리자 권한 사용자만 접근 가능
+>  - 자기참조 서브 카테고리 구현
+
+ 

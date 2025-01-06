@@ -4,8 +4,12 @@ import com.elice.sdz.global.util.CookieUtil;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomOAuth2User;
+import com.elice.sdz.user.dto.response.LoginResponse;
 import com.elice.sdz.user.entity.RefreshToken;
+import com.elice.sdz.user.entity.Users;
 import com.elice.sdz.user.repository.RefreshRepository;
+import com.elice.sdz.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 
 import static com.elice.sdz.global.config.SecurityConstants.*;
 
@@ -31,6 +36,7 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private  final UserRepository userRepository;
 
     @Value("${spring.targetUrl}")
     String targetUrl;
@@ -40,6 +46,20 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                                         Authentication authentication) throws IOException, ServletException {
         CustomOAuth2User customOAuth2User = (CustomOAuth2User)authentication.getPrincipal();
         String email = customOAuth2User.getEmail();
+
+        Optional<Users> optionalUser = userRepository.findById(email);
+        if (optionalUser.isEmpty()) {
+            log.info("회원이 존재하지 않습니다.");
+            response.sendRedirect(targetUrl);
+            return;
+        }
+        Users user = optionalUser.get();
+        if (user.isDeactivated()) {
+            log.info("회원 탈퇴된 아이디입니다: {}", user.getEmail());
+            response.sendRedirect(targetUrl);
+            return;
+        }
+
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String auth = authorities.stream()
                 .findFirst()

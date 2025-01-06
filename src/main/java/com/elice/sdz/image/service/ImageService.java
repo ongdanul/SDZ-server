@@ -12,7 +12,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,14 +25,19 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
 
+    @Value("${file.upload-dir}")
+    String uploadsDir;
+
+//    String uploadsDir = "src/main/resources/static/uploads/";
+
+    @Transactional
     public String uploadImage(Product product, List<MultipartFile> images, MultipartFile thumbnail) {
-        String uploadsDir = "src/main/resources/static/uploads/";
         String thumbnailPath = null; // 썸네일 경로를 저장할 변수
 
         for (MultipartFile image : images) {
             try {
                 // 이미지 파일 경로를 저장
-                String dbFilePath = saveImage(image, uploadsDir);
+                String dbFilePath = saveImage(image);
 
                 // 썸네일로 지정된 이미지와 비교
                 if (thumbnail != null && image.getOriginalFilename().equals(thumbnail.getOriginalFilename())) {
@@ -53,10 +60,10 @@ public class ImageService {
         return thumbnailPath; // 썸네일 경로 반환
     }
 
-    public String saveImage(MultipartFile image, String uploadsDir) throws IOException {
+    @Transactional
+    public String saveImage(MultipartFile image) throws IOException {
         // 파일 이름 생성
-//        String fileName = UUID.randomUUID().toString().replace("-", "");
-        String fileName = UUID.randomUUID().toString().replace("-", "") + "_" + image.getOriginalFilename();
+        String fileName = image.getOriginalFilename() + UUID.randomUUID().toString().replace("-", "");
         // 실제 파일이 저장될 경로
         String filePath = uploadsDir + fileName;
         // DB에 저장할 경로 문자열
@@ -69,12 +76,14 @@ public class ImageService {
         return dbFilePath;
     }
 
+    @Transactional
     public void deleteImage(Image image) {
-        String localFilePath = "src/main/resources/static" + image.getImagePath();
+        String localFilePath = "/home/kdt/backend" + image.getImagePath();
         deleteLocalFile(localFilePath);
         imageRepository.delete(image);
     }
 
+    @Transactional
     public void deleteLocalFile(String filePath) {
         try {
             Path path = Paths.get(filePath);

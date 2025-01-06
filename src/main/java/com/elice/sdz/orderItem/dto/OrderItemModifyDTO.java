@@ -1,11 +1,12 @@
 package com.elice.sdz.orderItem.dto;
 
-import com.elice.sdz.product.entity.Product;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class OrderItemModifyDTO {
     private Long productId;
     private int quantity;

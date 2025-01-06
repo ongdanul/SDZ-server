@@ -1,4 +1,4 @@
-package com.elice.sdz.user.dto;
+package com.elice.sdz.user.dto.request;
 
 import lombok.Data;
 

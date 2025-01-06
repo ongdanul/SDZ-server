@@ -2,6 +2,8 @@ package com.elice.sdz.user.controller;
 
 import com.elice.sdz.user.controller.apiDocs.UserApiDocs;
 import com.elice.sdz.user.dto.*;
+import com.elice.sdz.user.dto.response.UserResponseDTO;
+import com.elice.sdz.user.dto.response.VerificationResponseDTO;
 import com.elice.sdz.user.service.AuthenticationService;
 import com.elice.sdz.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,23 +28,23 @@ public class UserController implements UserApiDocs {
 
     @Override
     @PostMapping("/sign-up")
-    public ResponseEntity<Map<String,Object>> signUpProcess(@RequestBody @Valid SignUpDTO signUpDTO, BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<UserResponseDTO> signUpProcess(@RequestBody @Valid SignUpDTO signUpDTO, BindingResult bindingResult) {
+        UserResponseDTO response = new UserResponseDTO();
         if (bindingResult.hasErrors()) {
-            response.put("success", false);
-            response.put("message", "입력 값이 유효하지 않습니다.");
+            response.setSuccess(false);
+            response.setMessage("입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         boolean isSignedUp = userService.signUpProcess(signUpDTO);
         if (isSignedUp) {
-            response.put("success", true);
-            response.put("message", "회원가입이 성공적으로 완료되었습니다.");
-            response.put("userName", signUpDTO.getUserName());
+            response.setSuccess(true);
+            response.setMessage("회원가입이 성공적으로 완료되었습니다.");
+            response.setUserName(signUpDTO.getUserName());
             return ResponseEntity.ok(response);
         } else {
-            response.put("success", false);
-            response.put("message", "회원가입에 실패했습니다. 다시 시도해 주세요.");
+            response.setSuccess(false);
+            response.setMessage("회원가입에 실패했습니다. 다시 시도해 주세요.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -56,36 +57,36 @@ public class UserController implements UserApiDocs {
     }
 
     @PutMapping("/local/{email}")
-    public ResponseEntity<Map<String, Object>> updateLocalUser(@PathVariable("email") String email,
+    public ResponseEntity<UserResponseDTO> updateLocalUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateLocalDTO updateLocalDTO, BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
+        UserResponseDTO response = new UserResponseDTO();
         if (bindingResult.hasErrors()) {
-            response.put("success", false);
-            response.put("message", "입력 값이 유효하지 않습니다.");
+            response.setSuccess(false);
+            response.setMessage("입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         updateLocalDTO.setEmail(email);
         userService.updateLocalUser(updateLocalDTO);
-        response.put("success", true);
-        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        response.setSuccess(true);
+        response.setMessage("회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/social/{email}")
-    public ResponseEntity<Map<String, Object>> updateSocialUser(@PathVariable("email") String email,
+    public ResponseEntity<UserResponseDTO> updateSocialUser(@PathVariable("email") String email,
             @Valid @RequestBody UpdateSocialDTO updateSocialDTO, BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
+        UserResponseDTO response = new UserResponseDTO();
         if (bindingResult.hasErrors()) {
-            response.put("success", false);
-            response.put("message", "입력 값이 유효하지 않습니다.");
+            response.setSuccess(false);
+            response.setMessage("입력 값이 유효하지 않습니다.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         updateSocialDTO.setEmail(email);
         userService.updateSocialUser(updateSocialDTO);
-        response.put("success", true);
-        response.put("message", "회원 정보가 성공적으로 변경되었습니다.");
+        response.setSuccess(true);
+        response.setMessage("회원 정보가 성공적으로 변경되었습니다.");
         return ResponseEntity.ok(response);
     }
 

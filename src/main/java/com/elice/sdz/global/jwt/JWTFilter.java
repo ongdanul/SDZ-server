@@ -3,7 +3,9 @@ package com.elice.sdz.global.jwt;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.CustomUserDetails;
+import com.elice.sdz.user.dto.response.LoginResponse;
 import com.elice.sdz.user.entity.Users;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +47,7 @@ public class JWTFilter extends OncePerRequestFilter {
             jwtUtil.isExpired(accessToken);
 
             if (!jwtUtil.isValidCategory(accessToken, ACCESS_TOKEN_NAME)) {
-                throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+                sendResponse(response, ErrorCode.INVALID_ACCESS_TOKEN.getHttpStatus(), ErrorCode.INVALID_ACCESS_TOKEN.getMessage());
             }
 
             Users user = new Users();
@@ -57,12 +60,24 @@ public class JWTFilter extends OncePerRequestFilter {
 
         } catch (ExpiredJwtException e) {
             log.warn("만료된 엑세스 토큰입니다.: {}", accessToken);
-            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
+            sendResponse(response, ErrorCode.EXPIRED_ACCESS_TOKEN.getHttpStatus(), ErrorCode.EXPIRED_ACCESS_TOKEN.getMessage());
         } catch (Exception e) {
             log.error("JWT 토큰 검증 중 오류가 발생하였습니다.:", e);
-            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+            sendResponse(response, ErrorCode.INVALID_ACCESS_TOKEN.getHttpStatus(), ErrorCode.INVALID_ACCESS_TOKEN.getMessage());
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void sendResponse(HttpServletResponse response, HttpStatus statusCode, String message) throws IOException {
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setHttpStatus(statusCode);
+        loginResponse.setMessage(message);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
     }
 }
