@@ -2,8 +2,10 @@ package com.elice.sdz.delivery.service;
 
 import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.dto.DeliveryAddressListDTO;
+import com.elice.sdz.delivery.entity.Delivery;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.delivery.repository.DeliveryAddressRepository;
+import com.elice.sdz.delivery.repository.DeliveryRepository;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.user.dto.request.PageRequestDTO;
@@ -28,6 +30,7 @@ public class DeliveryAddressService {
 
     private final UserRepository userRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
+    private final DeliveryRepository deliveryRepository;
 
     public PageResponseDTO<DeliveryAddressListDTO> deliveryAddressList(PageRequestDTO pageRequestDTO, String email) {
         Pageable pageable = pageRequestDTO.getPageable("defaultCheck", "createdAt");
@@ -57,7 +60,17 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
+
+        return DeliveryAddressDTO.toDTO(deliveryAddress, user);
+    }
+
+    public DeliveryAddressDTO findDeliveryAddressDefaultInfo(String email) {
+        Users user = userRepository.findById(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByUserAndDefaultCheckTrue(user)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         return DeliveryAddressDTO.toDTO(deliveryAddress, user);
@@ -91,7 +104,7 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(deliveryAddressDTO.getEmail())
                 .orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
@@ -117,7 +130,7 @@ public class DeliveryAddressService {
         Users user = userRepository.findById(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if (!deliveryAddress.getUser().getEmail().equals(user.getEmail())) {
@@ -149,7 +162,7 @@ public class DeliveryAddressService {
 
     @Transactional
     public void deleteAddress(Long deliveryAddressId, String email) {
-        DeliveryAddress deliveryAddress = deliveryAddressRepository.findByDeliveryAddressId(deliveryAddressId)
+        DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         if(!deliveryAddress.getUser().getEmail().equals(email)) {

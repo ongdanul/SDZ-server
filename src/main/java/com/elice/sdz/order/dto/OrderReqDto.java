@@ -25,6 +25,8 @@ public class OrderReqDto {
     private boolean refundStatus; // 환불 상태 여부
     private String email;       // 사용자 email
     private DeliveryAddressDTO deliveryAddress;
+    private boolean newAddress;
+    private boolean addressModified;
 
     @Builder.Default
     private List<OrderItemDTO> orderItems = new ArrayList<>();

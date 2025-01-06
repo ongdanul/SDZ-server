@@ -63,6 +63,9 @@ public enum ErrorCode {
     DELIVERY_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY_ADDRESS_NOT_FOUND", "배송지 정보가 존재하지 않습니다."),
     MAX_DELIVERY_ADDRESSES(HttpStatus.CONFLICT, "MAX_DELIVERY_ADDRESSES", "배송지 주소는 최대 10개까지만 등록할 수 있습니다."),
 
+    // 배송 관련 에러
+    DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY_NOT_FOUND", "배송 정보가 존재하지 않습니다."),
+
     // 결제 관련 에러
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_FAILED", "결제 처리에 실패했습니다."),
 

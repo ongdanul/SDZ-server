@@ -4,6 +4,7 @@ import com.elice.sdz.delivery.dto.DeliveryAddressDTO;
 import com.elice.sdz.delivery.entity.Delivery;
 import com.elice.sdz.delivery.entity.DeliveryAddress;
 import com.elice.sdz.delivery.repository.DeliveryAddressRepository;
+import com.elice.sdz.delivery.service.DeliveryAddressService;
 import com.elice.sdz.global.exception.CustomException;
 import com.elice.sdz.global.exception.ErrorCode;
 import com.elice.sdz.order.dto.OrderReqDto;
@@ -49,7 +50,6 @@ public class OrderService {
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final UserRepository userRepository;
     private final OrderItemRepository orderItemRepository;
-
 
 
     // 사용자 주문 목록 조회 (페이지네이션 추가)
@@ -113,21 +113,35 @@ public class OrderService {
             }
 
         }
-        // 배송 주소 생성 및 저장
-        DeliveryAddress deliveryAddress = new DeliveryAddress();
-        deliveryAddress.setUser(user);
-        deliveryAddress.setDeliveryAddressId(orderReqDto.getDeliveryAddress().getDeliveryAddressId());
-        deliveryAddress.setDeliveryAddress1(orderReqDto.getDeliveryAddress().getDeliveryAddress1());
-        deliveryAddress.setDeliveryAddress2(orderReqDto.getDeliveryAddress().getDeliveryAddress2());
-        deliveryAddress.setDeliveryAddress3(orderReqDto.getDeliveryAddress().getDeliveryAddress3());
-        deliveryAddress.setReceiverName(orderReqDto.getDeliveryAddress().getReceiverName());
-        deliveryAddress.setReceiverContact(orderReqDto.getDeliveryAddress().getReceiverContact());
-        deliveryAddress.setDeliveryRequest(orderReqDto.getDeliveryAddress().getDeliveryRequest());
-        deliveryAddress.setDefaultCheck(false);
 
+        DeliveryAddress deliveryAddress;
+        if (orderReqDto.isNewAddress()) {
+            deliveryAddress = new DeliveryAddress();
+            deliveryAddress.setUser(user);
+            deliveryAddress.setDeliveryAddressId(orderReqDto.getDeliveryAddress().getDeliveryAddressId());
+            deliveryAddress.setDeliveryAddress1(orderReqDto.getDeliveryAddress().getDeliveryAddress1());
+            deliveryAddress.setDeliveryAddress2(orderReqDto.getDeliveryAddress().getDeliveryAddress2());
+            deliveryAddress.setDeliveryAddress3(orderReqDto.getDeliveryAddress().getDeliveryAddress3());
+            deliveryAddress.setReceiverName(orderReqDto.getDeliveryAddress().getReceiverName());
+            deliveryAddress.setReceiverContact(orderReqDto.getDeliveryAddress().getReceiverContact());
+            deliveryAddress.setDeliveryRequest(orderReqDto.getDeliveryAddress().getDeliveryRequest());
+            deliveryAddress.setDefaultCheck(false);
 
-        DeliveryAddress savedDeliveryAddress = deliveryAddressRepository.save(deliveryAddress);
+            deliveryAddressRepository.save(deliveryAddress);
+        } else {
+            deliveryAddress = deliveryAddressRepository.findById(orderReqDto.getDeliveryAddress().getDeliveryAddressId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
+            if (orderReqDto.isAddressModified()) {
+                deliveryAddress.setDeliveryAddress1(orderReqDto.getDeliveryAddress().getDeliveryAddress1());
+                deliveryAddress.setDeliveryAddress2(orderReqDto.getDeliveryAddress().getDeliveryAddress2());
+                deliveryAddress.setDeliveryAddress3(orderReqDto.getDeliveryAddress().getDeliveryAddress3());
+                deliveryAddress.setReceiverName(orderReqDto.getDeliveryAddress().getReceiverName());
+                deliveryAddress.setReceiverContact(orderReqDto.getDeliveryAddress().getReceiverContact());
+                deliveryAddress.setDeliveryRequest(orderReqDto.getDeliveryAddress().getDeliveryRequest());
+                deliveryAddressRepository.save(deliveryAddress);
+            }
+        }
 
         // 주문 객체 생성
         Order order = Order.builder()
@@ -142,7 +156,7 @@ public class OrderService {
         // 배송 정보 설정
         Delivery delivery = new Delivery();
         delivery.setOrder(order);
-        delivery.setDeliveryAddress(savedDeliveryAddress);
+        delivery.setDeliveryAddress(deliveryAddress);
         delivery.setDeliveryStatus(Delivery.Status.PENDING);
         order.setDelivery(delivery);
 
