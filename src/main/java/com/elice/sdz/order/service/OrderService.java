@@ -13,7 +13,6 @@ import com.elice.sdz.order.entity.OrderDetail;
 import com.elice.sdz.order.repository.OrderDetailRepository;
 import com.elice.sdz.order.repository.OrderRepository;
 import com.elice.sdz.orderItem.dto.OrderItemDTO;
-import com.elice.sdz.orderItem.repository.OrderItemRepository;
 import com.elice.sdz.product.entity.Product;
 import com.elice.sdz.product.repository.ProductRepository;
 import com.elice.sdz.user.entity.Users;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -190,7 +188,6 @@ public class OrderService {
         return orderRepository.findAll().stream()
                 .map(this::toResDto)
                 .collect(Collectors.toList());
-
     }
 
     //관리자 주문 상태수정
@@ -203,22 +200,39 @@ public class OrderService {
     }
     //관리자 주문 삭제
     @Transactional
-    public void deleteOrderByAdmin(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
-        // 주문에 연결된 OrderDetail 목록을 조회
-        List<OrderDetail> orderDetails = order.getOrderDetails();
-
-        // 각 주문 상품에 대해 재고 처리
-        for (OrderDetail detail : orderDetails) {
-            Product product = detail.getProduct();
-            if (product != null) {
-                product.setProductCount(product.getProductCount() + detail.getOrderCount());
-                productRepository.save(product);
-            }
+    public void deleteOrdersByAdmin(List<Long> orderIds) {
+        if (orderIds.isEmpty()) {
+            throw new CustomException(ErrorCode.ORDER_NOT_FOUND); // 삭제할 주문 ID가 없을 경우
         }
 
-        orderRepository.delete(order);
+        // 주문 ID에 해당하는 주문들을 조회
+        List<Order> orders = orderRepository.findAllById(orderIds);
+        if (orders.size() != orderIds.size()) {
+            throw new CustomException(ErrorCode.ORDER_NOT_FOUND); // 주문이 존재하지 않는 경우
+        }
+
+        // 각 주문에 대해 처리
+        for (Order order : orders) {
+            try {
+                // 주문에 연결된 OrderDetail 목록을 조회
+                List<OrderDetail> orderDetails = order.getOrderDetails();
+
+                // 주문에 연결된 각 상품에 대해 재고 처리
+                for (OrderDetail detail : orderDetails) {
+                    Product product = detail.getProduct();
+                    if (product != null) {
+                        product.setProductCount(product.getProductCount() + detail.getOrderCount());
+                        productRepository.save(product);
+                    }
+                }
+
+                // 주문 삭제
+                orderRepository.delete(order);
+            } catch (Exception e) {
+                log.error("주문 {} 삭제 중 오류 발생", order.getOrderId(), e);
+                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR); // 예외 발생 시 처리
+            }
+        }
     }
 
 

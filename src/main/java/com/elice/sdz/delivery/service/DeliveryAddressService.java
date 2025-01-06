@@ -30,7 +30,6 @@ public class DeliveryAddressService {
 
     private final UserRepository userRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
-    private final DeliveryRepository deliveryRepository;
 
     public PageResponseDTO<DeliveryAddressListDTO> deliveryAddressList(PageRequestDTO pageRequestDTO, String email) {
         Pageable pageable = pageRequestDTO.getPageable("defaultCheck", "createdAt");
